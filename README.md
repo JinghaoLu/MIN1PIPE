@@ -20,8 +20,8 @@ MIN1PIPE contains essentially three steps: neural enhancing, movement correction
   - Automated manual seeds selection module: for users who want to manually select seeds of neuron ROIs that will result in **ZERO** false positives
   - Post-process exclusion of "bad" neural components
   
-Please cite this paper if you used MIN1PIPE for processing data:
+**Please cite this paper if you used MIN1PIPE for processing data:**
 
-Lu, J., Li, C., Singh-Alvarado, J., Zhou, Z., Fröhlich, F., Mooney, R., & Wang, F. (2018). MIN1PIPE: A Miniscope 1-photon-based Calcium Imaging Signal Extraction Pipeline. *bioRxiv*, 311548.
+**Lu, J.**, Li, C., Singh-Alvarado, J., Zhou, Z., Fröhlich, F., Mooney, R., & Wang, F. (2018). MIN1PIPE: A Miniscope 1-photon-based Calcium Imaging Signal Extraction Pipeline. *bioRxiv*, 311548.
 
 Please email to min1pipe2018@gmail.com provided additional questions.
