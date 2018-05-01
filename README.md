@@ -24,4 +24,8 @@ MIN1PIPE contains essentially three steps: neural enhancing, movement correction
 
 **Lu, J.**, Li, C., Singh-Alvarado, J., Zhou, Z., Fröhlich, F., Mooney, R., & Wang, F. (2018). MIN1PIPE: A Miniscope 1-photon-based Calcium Imaging Signal Extraction Pipeline. *bioRxiv*, 311548.
 
+**Related references**
+
+**Lu, J.**, Li, C., & Wang, F. (2017). Seeds Cleansing CNMF for Spatiotemporal Neural Signals Extraction of Miniscope Imaging Data. *arXiv preprint* arXiv:1704.00793.
+
 Please email to min1pipe2018@gmail.com provided additional questions.
