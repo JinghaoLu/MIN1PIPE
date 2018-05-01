@@ -4,12 +4,13 @@
 Fsi = 20;
 Fsi_new = 20; %%% no temporal downsampling %%%
 spatialr = 1; %%% no spatial downsampling %%%
+se = 5; %%% structure element for background removal %%%
 flag = 1; %%% use auto seeds selection %%%
 isvis = true; %%% do visualize %%%
 ifpost = false; %%% set true if want to see post-process %%%
 
 %% main program %%
-[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, flag, isvis);
+[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, se, flag, isvis);
 
 %% plot some images %%
 load(fname)

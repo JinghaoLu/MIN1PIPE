@@ -1,4 +1,4 @@
-function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, flag, isvis)
+function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, flag, isvis)
 % main_processing
 %   need to decide whether to use parallel computing
 %   Fsi: raw sampling rate
@@ -25,11 +25,16 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, f
         spatialr = defpar.spatialr;
     end
     
-    if nargin < 4 || isempty(flag)
+    if nargin < 4 || isempty(se)
+        defpar = default_parameters;
+        se = defpar.bg_remove_size;
+    end
+    
+    if nargin < 5 || isempty(flag)
         flag = 1;
     end
     
-    if nargin < 5 || isempty(isvis)
+    if nargin < 6 || isempty(isvis)
         isvis = false;
     end
     
@@ -39,7 +44,7 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, f
     Params.Fsi = Fsi;                                                   %%%
     Params.Fsi_new = Fsi_new;                                           %%%
     Params.spatialr = spatialr;                                         %%%
-    Params.neuron_size = 5; %%% half neuron size; 9 for Inscopix and 5  %%%
+    Params.neuron_size = se; %%% half neuron size; 9 for Inscopix and 5  %%%
                             %%% for UCLA, with 0.5 spatialr separately  %%%
                                                                         %%%
     %%% fixed parameters (change not recommanded) %%%                   %%%
