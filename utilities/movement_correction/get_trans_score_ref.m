@@ -13,7 +13,8 @@ function acorr = get_trans_score_ref(Y, imref)
             d = klt2(img_old, img, biderr, mq);
             if ~isempty(d)
                 temp = mean(sqrt(d(:, 1) .^ 2 + d(:, 2) .^ 2));
-                acorr(i) = max(1, exp((-size(d, 1) + 10) / 2)) * temp;
+%                 acorr(i) = max(1, exp((-size(d, 1) + 10) / 2)) * temp;
+                acorr(i) = temp;
             else
                 acorr(i) = 10; %%% a large score %%%
             end
@@ -25,7 +26,8 @@ function acorr = get_trans_score_ref(Y, imref)
             d = klt2(img_old, img, biderr, mq);
             if ~isempty(d)
                 temp = mean(sqrt(d(:, 1) .^ 2 + d(:, 2) .^ 2));
-                acorr(i) = max(1, exp((-size(d, 1) + 10) / 2)) * temp;
+%                 acorr(i) = max(1, exp((-size(d, 1) + 10) / 2)) * temp;
+                acorr(i) = temp;
             else
                 acorr(i) = 10; %%% a large score %%%
             end
