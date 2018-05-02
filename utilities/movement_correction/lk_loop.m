@@ -18,6 +18,7 @@ function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
     imgallfn = {};
     xfallfn = {};
     mxint1 = mxin;
+    mxintt = mxin;
     [pixh, pixw, nf] = size(mxin);
     pixthres = scl * pixs;
     idrun = 1: nf - 1;
@@ -40,8 +41,31 @@ function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
                 if ismember(ii, idrun)
                     imref = mxint2(:, :, ii);
                     imcur = mxint3(:, :, ii + 1);
+                    
+                    %%%% track current two neighboring "frames" %%%%
                     [PNt, imgt, scrto] = lk_ref_track(imcur, imref);
                     scrtc = get_trans_score_ref(imgt, imref);
+                    
+                    %%%% track real neighboring frames %%%%
+                    if countfn > 1
+                        [imreft, imcurt] = find_frame(mxintt, idclustfn, ii);
+                        
+                        %%%%% the other track %%%%%
+                        [PNt1, imgt1, scrto1] = lk_ref_track(imcurt, imreft);
+                        scrtc1 = get_trans_score_ref(imgt1, imreft);
+                        
+                        %%%%% get smallest score %%%%%
+                        if scrto1 < scrto
+                            scrto = scrto1;
+                        end
+                        
+                        if scrtc1 < scrtc
+                            PNt = PNt1;
+                            imgt = imgt1;
+                            scrtc = scrtc1;
+                        end
+                    end
+                    
                     if scrto < scrtc
                         PNt = [0; 0];
                         imgt = imcur;
@@ -174,6 +198,8 @@ function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
                 xfmatrix = xfmatrix(setdiff(1: n, idtargets));
                 imgmatrix = imgmatrix(:, :, setdiff(1: n, idtargets));
                 scrs = scrs(setdiff(1: n - 1, idsources));
+                
+                mxintt = temporary_warp(xfallfn, idclustfn, mxin);
                 countfn = countfn + 1;
             else
                 break

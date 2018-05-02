@@ -73,7 +73,6 @@ function iduset = seeds_merge_unit(conmtx, Y, iduse)
             sgrft = rmnode(sgrft, get_node_name(idt));
             idcur = setdiff(idcur, idt);
         end
-        
-        disp(num2str(i))
+%         disp(num2str(i))
     end
 end

@@ -9,9 +9,12 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl)
     
     %% divide into sections %%
     flag = 1;
-%     thres1 = hist_gauss(acorr);
-%     thres = min(scl * pixs, min(mad(acorr) + median(acorr), thres1)); %%% no more than scl (percentage0) of the image size %%%
-    thres1 = gmm_bg(acorr);
+    try
+        thres1 = gmm_bg(acorr);
+    catch
+        thres1 = hist_gauss(acorr);
+        thres1 = min(2 * mad(acorr) + median(acorr), thres1);
+    end
     thres = min(scl * pixs, thres1); %%% no more than scl (percentage0) of the image size %%%
     scl = thres / pixs; %%% update new scl %%%
     ids = acorr > thres;

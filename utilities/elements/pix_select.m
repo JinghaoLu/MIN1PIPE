@@ -46,7 +46,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     for i = 1: niter
         datamxt = datap(:, :, i);
         mxmx(:, :, i) = imregionalmax(datamxt);
-        disp(num2str(i))
+%         disp(num2str(i))
     end
     proj1 = (sum(mxmx, 3) > 0) | (imregionalmax(imgaussfilt(max(frame, [], 3), 1)));
     disp('Done randomized seeds init')
