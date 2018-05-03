@@ -11,7 +11,7 @@ isvis = true; %%% do visualize %%%
 ifpost = false; %%% set true if want to see post-process %%%
 
 %% main program %%
-[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, se, flag, isvis);
+[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, isvis);
 
 %% plot some images %%
 load(fname)

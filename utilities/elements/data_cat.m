@@ -32,7 +32,9 @@ function [frame_all, pixh, pixw, nf] = data_cat(path_name, file_base, file_fmt, 
     %%% initialize to get info %%%
     if contains(file_fmt, 'avi')
         dirst = [dir([path_name, file_base, '.avi']); dir([path_name, file_base, '*', '.avi'])];
-    else
+    elseif contains(file_fmt, 'tiff')
+        dirst = [dir([path_name, file_base, '.tiff']); dir([path_name, file_base, '-*', '.tiff'])];
+    elseif contains(file_fmt, 'tif')
         dirst = [dir([path_name, file_base, '.tif']); dir([path_name, file_base, '-*', '.tif'])];
     end
     dirs = cell(1, length(dirst));
