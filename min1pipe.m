@@ -1,4 +1,4 @@
-function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, flag, isvis)
+function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, isvis)
 % main_processing
 %   need to decide whether to use parallel computing
 %   Fsi: raw sampling rate
@@ -30,11 +30,15 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
         se = defpar.neuron_size;
     end
     
-    if nargin < 5 || isempty(flag)
+    if nargin < 5 || isempty(ismc)
+        ismc = true;
+    end
+    
+    if nargin < 6 || isempty(flag)
         flag = 1;
     end
     
-    if nargin < 6 || isempty(isvis)
+    if nargin < 7 || isempty(isvis)
         isvis = false;
     end
     
@@ -113,15 +117,20 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
         clear Yblur
 
         %% frame register %%
-        pixs = min(pixh, pixw);
-        Params.mc_pixs = pixs;
-        Fsi_new = Params.Fsi_new;
-        scl = Params.mc_scl;
-        sigma_x = Params.mc_sigma_x;
-        sigma_f = Params.mc_sigma_f;
-        sigma_d = Params.mc_sigma_d;
-        [reg, corr_score, raw_score, scl] = frame_reg(Ydebg, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
-        Params.mc_scl = scl; %%% update latest scl %%%
+        if ismc
+            pixs = min(pixh, pixw);
+            Params.mc_pixs = pixs;
+            Fsi_new = Params.Fsi_new;
+            scl = Params.mc_scl;
+            sigma_x = Params.mc_sigma_x;
+            sigma_f = Params.mc_sigma_f;
+            sigma_d = Params.mc_sigma_d;
+            [reg, corr_score, raw_score, scl] = frame_reg(Ydebg, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+            Params.mc_scl = scl; %%% update latest scl %%%
+        else
+            reg = Ydebg;
+        end
+        
         if isvis
             data.reg = reg;
         end
