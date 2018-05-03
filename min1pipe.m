@@ -189,7 +189,13 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
         imax = max(reg, [], 3);
         file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
         file_name_reg = [path_name, file_base{i}, '_reg.mat'];
-        save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
+        
+        if ismc
+            save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
+        else
+            save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
+        end
+        
         if isvis
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
             save(file_name_reg, 'data', '-v7.3')
