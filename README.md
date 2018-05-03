@@ -32,7 +32,7 @@ This Matlab implementation has the following dependencies (included under [`util
 ### Demo
 As a demo, we demonstrate the use of 1-photon calcium imaging video recorded with UCLA miniscope:
 ```
-demo_min1pipe.m
+[demo_min1pipe.m](./demo_min1pipe.m)
 ```
 The same code can also be adapted to custom scripts for the processing.
 
