@@ -128,7 +128,7 @@ function real_neuron_select
     sigfnr = sigr(neuron_use, :);
     bgfn = bg;
     bgffn = bgf;
-    save([path_name, file_id, '_refined.mat'], 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax')
+    save([path_name, file_id, '_refined.mat'], 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'raw_score', 'corr_score', 'Params')
 end
 
 
