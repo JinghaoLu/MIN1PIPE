@@ -60,4 +60,4 @@ or the related [arXiv version](https://arxiv.org/abs/1704.00793):
 ```
 
 ## Questions?
-Please email to (`min1pipe2018@gmail.com`)(min1pipe2018@gmail.com) for additional questions.
+Please email to [`min1pipe2018@gmail.com`](min1pipe2018@gmail.com) for additional questions.
