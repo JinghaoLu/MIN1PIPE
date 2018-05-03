@@ -27,7 +27,7 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
     
     if nargin < 4 || isempty(se)
         defpar = default_parameters;
-        se = defpar.bg_remove_size;
+        se = defpar.neuron_size;
     end
     
     if nargin < 5 || isempty(flag)
