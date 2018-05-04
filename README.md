@@ -23,7 +23,7 @@ MIN1PIPE contains the following three modules:
 - **`Semi-auto options`**: we also provide semi-auto options, including
   - Automated manual seeds selection module: for users who want to manually select seeds of neuron ROIs that will result in **ZERO** false positives
   - Post-process exclusion of "bad" neural components
-- **`RNN-LSTM classifier training module`**: we provide a module of Recursive Neural Network (RNN) with Long-short Term Memory (LSTM) structure fully implemented in Matlab that users can train their specific calcium-dynamical classifier. 
+- **`RNN-LSTM classifier training module`**: we provide a module of Recursive Neural Network (RNN) with Long-short Term Memory (LSTM) structure fully implemented in Matlab with which the users can train their specific calcium-dynamical classifier. 
 
 ## Dependencies
 This Matlab implementation has the following dependencies (included under [`utilities`](./utilities)):
@@ -71,15 +71,15 @@ demo_min1pipe.m
 The same code can also be adapted to custom scripts for the processing.
 
 ## Custom Data
-To use the code on a custom dataset, no specific requirements are needed. The processed data and the data after movement correction are saved in the same folder of the raw data in *.mat* format, with *_data_processed* and *_reg* as endings separately.
+To use the code on a custom dataset, no specific requirements are needed. The processed data and the data after movement correction are saved in the same folder of the raw data in *".mat"* format, with *"_data_processed"* and *"_reg"* as endings separately.
 
-If post-process is selected, there will be an additional *.mat* file created with *_data_processed_refined*.
+If post-process is selected, there will be an additional *".mat"* file created with *"_data_processed_refined"*.
 
 ## Practical Suggestions
 - Data should be arranged in sessions:
     - Each session contains multiple videos automatically divided by the recording softwares.
-    - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" and indices. We suggest sticking to this format for *.tif* and *.tiff* data.
-    - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *msCam* + *indices*, and we suggest sticking to this format for *.avi* data.
+    - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" + *"indices"*. We suggest sticking to this format for *.tif* and *.tiff* data.
+    - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"* + *"indices"*, and we suggest sticking to this format for *".avi"* data.
 - Hardware
     - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
     - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
