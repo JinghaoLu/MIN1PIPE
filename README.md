@@ -4,42 +4,90 @@
 MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range problems in 1-photon calcium imaging in one package: *`data enhancement`* &rarr; *`movement morrection`* &rarr; *`signal extraction`*. It requires minimal parameter-tuning and integrates the semi-auto options. Each inidividual module can also be easily adapted for the 2-photon imaging setting.
 
 ## Contents
-1. [Introduction](#introduction)
+1. [Introduction and Features](#introduction-and-features)
 2. [Dependencies](#dependencies)
 3. [Usage](#usage)
-    1. [Demo](#demo)
-    2. [Custom data](#custom-data)
+4. [Dataset](#dataset)
+5. [Custom Data](#custom-data)
+6. [Practical Suggestions](#practical-suggestions)
+7. [References](#references)
+8. [Questions](#questions)
 
-## Introduction
+## Introduction and Features
 MIN1PIPE contains the following three modules:
 - **`Neural Enhancing`**: remove spatial noise and then adaptively remove non-neural background in the field of view in a framewise manner.
-- **`Movement Correction`**: remove field of view movement with a hierarchical designed nonrigid movement correction module (integrating KLT Tracker and LogDemons deformation registration method), which is free of assumption about movement type and amplitude.
+- **`Movement Correction`**: remove field of view movement with a specially designed hierarchical nonrigid movement correction module (integrating KLT Tracker and LogDemons deformation registration method), which is free of assumption about movement type and amplitude.
 - **`Neural Signal Extraction`**: identify neuronal ROIs and corresponding calcium traces with minimal false positive rates (incorporating GMM, LSTM as true neuron selector and modified CNMF as spatiotemporal calcium signal identifier)
 
-**`Semi-auto options`**: We also provide semi-auto options, including
+**Additional Features**
+- **`Semi-auto options`**: we also provide semi-auto options, including
   - Automated manual seeds selection module: for users who want to manually select seeds of neuron ROIs that will result in **ZERO** false positives
   - Post-process exclusion of "bad" neural components
-  
+- **`RNN-LSTM classifier training module`**: we provide a module of Recursive Neural Network (RNN) with Long-short Term Memory (LSTM) structure fully implemented in Matlab that users can train their specific calcium-dynamical classifier. 
+
 ## Dependencies
 This Matlab implementation has the following dependencies (included under [`utilities`](./utilities)):
-- [CVX](http://cvxr.com/cvx/)
+- Modified [CNMF](https://github.com/flatironinstitute/CaImAn-MATLAB)
+    - [CVX](http://cvxr.com/cvx/): for OS other than Windows, users should download correpsonding CVX toolbox and replace the folder CVX in the codes.
+
+Additional Matlab toolboxes:
+- Computer Vision System Toolbox
+- Curve Fitting Toolbox
+- Fuzzy Logic Toolbox
+- Image Processing Toolbox
+- Optimization Toolbox
+- Parallel Computing Toolbox
+- Signal Processing Toolbox
+- Statistics and Machine Learning Toolbox
+- Symbolic Math Toolbox
+
+Other modified functions adapted from others are credited the original sources in code documentations.
 
 ## Usage
 - Download/clone the git repository of the codes
 - Open Matlab and set the MIN1PIPE folder as the current folder in Matlab
-- Run [`min1pipe.m`](./min1pipe.m), the code automatically sets the package to the path, and processes the data the user specifies. For argument options, please see [`min1pipe.m`](./min1pipe.m)
+- Run [`min1pipe.m`](./min1pipe.m).
+    - The code automatically sets the package to the path, and processes the data the user specifies. 
+    - For argument options, please see [`min1pipe.m`](./min1pipe.m)
+- The only manual intervention is to select the data for processing. 
+    - A modal dialogue is popped up right after the execution of the code, and the users can select the folder containing the data.
+    - For multi-video datasets automatically divided by the data acquisition softwares, only the first (or a random video of the session) needs choosing. 
+    - The algorithm will automatically judge the format of the datasets.
+    - Currently support: *.avi*, *.tif* and *.tiff*.
 
-### Demo
-As a demo, we demonstrate the use of 1-photon calcium imaging video recorded with UCLA miniscope:
+Key Parameters:
+- **`Fsi`**: frame rate of original video
+- **`Fsi_new`**: frame rate of temporally downsampled video
+- **`spatialr`**: spatial downsampling rate
+- **`se`**: structure element size, estimated from typical half-neuron size after spatial downsampling
+
+Other fixed preset parameters can be found in [`min1pipe.m`](./min1pipe.m), and the **`table`** in the [paper](https://www.biorxiv.org/content/early/2018/04/30/311548).
+
+## Dataset
+As a demo, we demonstrate the use of 1-photon calcium imaging video recorded with [UCLA miniscope](http://miniscope.org/index.php/Main_Page):
 ```
 demo_min1pipe.m
 ```
 The same code can also be adapted to custom scripts for the processing.
 
-### Custom data
-To use the code on a custom dataset, you need to put your dataset under the foler [demo](./demo) as "*.tif"
+## Custom Data
+To use the code on a custom dataset, no specific requirements are needed. The processed data and the data after movement correction are saved in the same folder of the raw data in *.mat* format, with *_data_processed* and *_reg* as endings separately.
+
+If post-process is selected, there will be an additional *.mat* file created with *_data_processed_refined*.
+
+## Practical Suggestions
+- Data should be arranged in sessions:
+    - Each session contains multiple videos automatically divided by the recording softwares.
+    - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" and indices. We suggest sticking to this format for *.tif* and *.tiff* data.
+    - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *msCam* + *indices*, and we suggest sticking to this format for *.avi* data.
+- Hardware
+    - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
+    - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
+    - Memory mapping will be integrated in future.
   
 ## References
+The paper is now *accepted* by *Cell Reports*.
+
 Please cite [the MIN1PIPE paper](https://www.biorxiv.org/content/early/2018/04/30/311548) if it helps your research.
 ```
 @article{lu2018MIN1PIPE,
