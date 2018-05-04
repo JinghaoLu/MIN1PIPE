@@ -258,7 +258,8 @@ if new
 end
 b = b(active_set == 1);
 
-avec = Mm\b;
+% avec = Mm\b;
+avec = pinv(Mm) * b; %%% avoid NaN %%%
 
 if positive 
     if new 
