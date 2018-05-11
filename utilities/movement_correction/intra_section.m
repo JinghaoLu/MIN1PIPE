@@ -34,6 +34,8 @@ function regt = intra_section(Y, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d,
     %%% if real selection, jump the logdemons part %%%
     if flag
         sclld = 1;
+    else
+        sclld = scl;
     end
         
     %% prepare for parallel computing %%
