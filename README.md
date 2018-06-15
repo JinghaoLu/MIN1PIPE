@@ -78,7 +78,7 @@ The same code can also be adapted to custom scripts for the processing.
 
 Here are the visualization of the demo dataset processing:
 
-![alt text](https://github.com/JinghaoLu/MIN1PIPE/edit/master/demo/demo_visualization.png)
+![alt text](./demo/demo_visualization.png)
 
 ## Custom Data
 To use the code on a custom dataset, no specific requirements are needed. The processed data and the data after movement correction are saved in the same folder of the raw data in *".mat"* format, with *"_data_processed"* and *"_reg"* as endings separately.
