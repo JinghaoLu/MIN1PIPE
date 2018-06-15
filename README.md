@@ -61,6 +61,12 @@ Key Parameters:
 - **`spatialr`**: spatial downsampling rate
 - **`se`**: structure element size, estimated from typical half-neuron size after spatial downsampling
 
+Procedure Parameters
+- **`ismc`**: whether use movement correction module
+- **`flag`**: whether use automatic or semi_automatic seeds selection
+- **`isvis`**: whether visualize after processing, including results of each step
+- **`ifpost`**: whether use post-process
+
 Other fixed preset parameters can be found in [`min1pipe.m`](./min1pipe.m), and the **`table`** in the [paper](https://www.biorxiv.org/content/early/2018/04/30/311548).
 
 ## Dataset
@@ -76,10 +82,15 @@ To use the code on a custom dataset, no specific requirements are needed. The pr
 If post-process is selected, there will be an additional *".mat"* file created with *"_data_processed_refined"*.
 
 ## Practical Suggestions
-- Data should be arranged in sessions:
+- Data tips
+    - Data should be arranged in sessions.
     - Each session contains multiple videos automatically divided by the recording softwares.
     - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" + *"indices"*. We suggest sticking to this format for *.tif* and *.tiff* data.
     - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"* + *"indices"*, and we suggest sticking to this format for *".avi"* data.
+    - For best practice, remove apparent artifects such as bright edges of the grin lenses, even though the algorithm can handle these conditions.
+    - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand.
+- Software
+    - Matlab R2017 and later.
 - Hardware
     - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
     - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
