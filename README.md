@@ -101,6 +101,22 @@ If post-process is selected, there will be an additional *".mat"* file created w
     - Memory mapping will be integrated in future.
   
 ## References
+*Updates*
+
+Please cite [the MIN1PIPE journal paper](https://www.cell.com/cell-reports/fulltext/S2211-1247(18)30826-X) if it helps your research.
+```
+@article{lu2018MIN1PIPE,
+  title={MIN1PIPE: A Miniscope 1-photon-based Calcium Imaging Signal Extraction Pipeline.},
+  author={Lu, J., Li, C., Singh-Alvarado, J., Zhou, Z., Fröhlich, F., Mooney, R., & Wang, F.},
+  journal={Cell reports},
+  volume={23},
+  number={12},
+  pages={3673--3684},
+  year={2018},
+  publisher={Elsevier}
+}
+```
+
 The paper is now *accepted* by *Cell Reports*.
 
 Please cite [the MIN1PIPE paper](https://www.biorxiv.org/content/early/2018/04/30/311548) if it helps your research.
