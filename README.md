@@ -101,8 +101,7 @@ If post-process is selected, there will be an additional *".mat"* file created w
     - Memory mapping will be integrated in future.
   
 ## References
-*Updates*
-
+***Updates***
 Please cite [the MIN1PIPE journal paper](https://www.cell.com/cell-reports/fulltext/S2211-1247(18)30826-X) if it helps your research.
 ```
 @article{lu2018MIN1PIPE,
@@ -116,7 +115,7 @@ Please cite [the MIN1PIPE journal paper](https://www.cell.com/cell-reports/fullt
   publisher={Elsevier}
 }
 ```
-
+***Archives***
 The paper is now *accepted* by *Cell Reports*.
 
 Please cite [the MIN1PIPE paper](https://www.biorxiv.org/content/early/2018/04/30/311548) if it helps your research.
