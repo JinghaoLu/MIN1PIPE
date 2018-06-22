@@ -11,7 +11,8 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 5. [Custom Data](#custom-data)
 6. [Practical Suggestions](#practical-suggestions)
 7. [References](#references)
-8. [Questions](#questions)
+8. [Updates](#updates)
+9. [Questions](#questions)
 
 ## Introduction and Features
 MIN1PIPE contains the following three modules:
@@ -30,7 +31,7 @@ This Matlab implementation has the following dependencies (included under [`util
 - Modified [CNMF](https://github.com/flatironinstitute/CaImAn-MATLAB)
     - [CVX](http://cvxr.com/cvx/): for OS other than Windows, users should download correpsonding CVX toolbox and replace the folder CVX in the codes.
 
-Additional Matlab toolboxes:
+**Additional Matlab toolboxes**:
 - Computer Vision System Toolbox
 - Curve Fitting Toolbox
 - Fuzzy Logic Toolbox
@@ -55,17 +56,26 @@ Other modified functions adapted from others are credited the original sources i
     - The algorithm will automatically judge the format of the datasets.
     - Currently support: *.avi*, *.tif* and *.tiff*.
 
-Key Parameters:
+**Key Parameters**:
 - **`Fsi`**: frame rate of original video
 - **`Fsi_new`**: frame rate of temporally downsampled video
 - **`spatialr`**: spatial downsampling rate
 - **`se`**: structure element size, estimated from typical half-neuron size after spatial downsampling
 
-Procedure Parameters
+**Procedure Parameters**:
 - **`ismc`**: whether use movement correction module
 - **`flag`**: whether use automatic or semi_automatic seeds selection
 - **`isvis`**: whether visualize after processing, including results of each step
 - **`ifpost`**: whether use post-process
+
+**Key Outputs**:
+- **`roifn`**: processed vectorized ROI footprints
+- **`sigfn`**: processed calcium traces of corresponding ROIs
+- **`roifnr`**: processed vectorized ROI footprints without calcium deconvolution
+- **`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"
+- **`seedsfn`**: ROI centers in pixel coordinates
+- **`Params`**: used parameters
+- **`reg`**: data after neural enhancing (and movement correction), saved for reprocessing
 
 Other fixed preset parameters can be found in [`min1pipe.m`](./min1pipe.m), and the **`table`** in the [paper](https://www.biorxiv.org/content/early/2018/04/30/311548).
 
@@ -136,6 +146,9 @@ or the related [arXiv version](https://arxiv.org/abs/1704.00793):
   year={2017}
 }
 ```
+
+## Updates
+
 
 ## Questions?
 Please email to [`min1pipe2018@gmail.com`](mailto:min1pipe2018@gmail.com) for additional questions.
