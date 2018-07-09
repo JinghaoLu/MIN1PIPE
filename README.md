@@ -45,6 +45,7 @@ This Matlab implementation has the following dependencies (included under [`util
 Other modified functions adapted from others are credited the original sources in code documentations.
 
 ## Usage
+- **Do not add the package to the Matlab path before running, the package will add everything automatically.**
 - Download/clone the git repository of the codes
 - Open Matlab and set the MIN1PIPE folder as the current folder in Matlab
 - Run [`min1pipe.m`](./min1pipe.m).
