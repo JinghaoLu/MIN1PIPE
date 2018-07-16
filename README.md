@@ -97,6 +97,9 @@ To use the code on a custom dataset, no specific requirements are needed. The pr
 If post-process is selected, there will be an additional *".mat"* file created with *"_data_processed_refined"*.
 
 ## Practical Suggestions
+***Updates***
+***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
+
 - Data tips
     - Data should be arranged in sessions.
     - Each session contains multiple videos automatically divided by the recording softwares.
