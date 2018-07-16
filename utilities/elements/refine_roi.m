@@ -1,4 +1,4 @@
-function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, Aold, iduse, noise, datasmthf, cutofff, pkcutofff, ispara)
+function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, Aold, iduse, noise, datasmthf, cutofff, pkcutofff, ispara)
 % [A, b, C, iduse] = refine_roi refine roi by basis pursuit denoising
 %   modified from E Pnevmatikakis
 %   Jinghao Lu 06/10/2016
@@ -15,14 +15,14 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, A
         ispara = defpar.refine_roi_ispara;
     end
     
-    [d1, d2, d3] = size(Y);
+    [d1, d2, d3] = size(m, 'reg');
     d = d1 * d2;
     nroi = size(Aold, 2);
     nseed = length(iduse);
     swin = 6;
 
     %%% imgaussfilt for search area construction %%%
-    sarea = sparse(zeros(size(Aold)));
+    sarea = zeros(size(Aold));
     cthres = 0.1;
     for i = 1: nroi
         sarea(:, i) = reshape(normalize(imgaussfilt(full(reshape(Aold(:, i), d1, d2)), swin)) > cthres, d, 1);
@@ -32,8 +32,8 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, A
     
     %% BPDN main %%
     A = zeros(d, nroi);
-    Y = reshape(Y, d, d3);
     ind2use = find(sum(sarea, 2));
+%     [h, w] = ind2sub([d1, d2], ind2use);
     npx = length(ind2use);
     ind = cell(1, npx);
     Cuse = cell(1, npx);
@@ -42,21 +42,45 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, A
         Cuse{i} = [C(ind{i}, :); f];
     end
     
+    nsize = d * d3 * 8; %%% size of double %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(d / nbatch);
+    eb = floor(ebatch / d1);
+    idbatch = [1: eb: d2, d2 + 1];
+    nbatch = length(idbatch) - 1;
+
     %%% prepare for parallel %%%
     At = A(ind2use, :);
     noiset = noise(ind2use);
-    Yt = Y(ind2use, :);
+    indcount = 0;
     
     if ispara
-        parfor i = 1: npx   % estimate spatial components
-            [~, ~, a, ~, ~] = lars_regression_noise(Yt(i, :)', Cuse{i}', 1, noiset(i) ^ 2 * d3);
-            tmp = At(i, :);
-            tmp(ind{i}) = a(1: max(1, end - 1))';
-            At(i, :) = tmp;
+        for j = 1: nbatch
+            datat = m.reg(1: d1, idbatch(j): idbatch(j + 1) - 1, 1: d3);
+            datat = reshape(datat, d1 * (idbatch(j + 1) - idbatch(j)), d3);
+            idt = ind2use > d1 * (idbatch(j) - 1) & ind2use <= d1 * (idbatch(j + 1) - 1);
+            idt = ind2use(idt) - d1 * (idbatch(j) - 1);
+            datat = double(datat(idt, :));
+            Ctmp = Cuse(indcount + 1: indcount + length(idt));
+            Atmp = At(indcount + 1: indcount + length(idt), :);
+            noisetmp = noiset(indcount + 1: indcount + length(idt));
+            indtmp = ind(indcount + 1: indcount + length(idt));
+            parfor i = 1: length(idt)  % estimate spatial components
+                [~, ~, a, ~, ~] = lars_regression_noise(datat(i, :)', Ctmp{i}', 1, noisetmp(i) ^ 2 * d3);
+                tmp = Atmp(i, :);
+                tmp(indtmp{i}) = a(1: max(1, end - 1))';
+                Atmp(i, :) = tmp;
+%                 disp(num2str(i))
+            end
+            Cuse(indcount + 1: indcount + length(idt)) = Ctmp;
+            At(indcount + 1: indcount + length(idt), :) = Atmp;
+            noiset(indcount + 1: indcount + length(idt)) = noisetmp;
+            ind(indcount + 1: indcount + length(idt)) = indtmp;
+            indcount = indcount + length(idt);
         end
     else
         for i = 1: npx   % estimate spatial components
-            [~, ~, a, ~, ~] = lars_regression_noise(Yt(i, :)', Cuse{i}', 1, noiset(i) ^ 2 * d3);
+            [~, ~, a, ~, ~] = lars_regression_noise(squeeze(double(m.reg(h(i), w(i), 1: d3))), Cuse{i}', 1, noiset(i) ^ 2 * d3);
             tmp = At(i, :);
             tmp(ind{i}) = a(1: max(1, end - 1))';
             At(i, :) = tmp;
@@ -71,7 +95,7 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, A
     if iscell(A)
         A = cell2mat(A);
     end
-    A(isnan(A))=0;
+    A(isnan(A)) = 0;
     A = A(:, 1: nseed); %%% only get required rois (based on seeds) %%%
     time = toc(hroi);
     disp(['Done BPDN, use ', num2str(time), ' seconds'])
@@ -161,8 +185,20 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(Y, C, f, A
     disp(['Done postprocessing, use ', num2str(time), ' seconds'])
 
     %% background update %%
-    Yf = Y * f';
-    b = max((Yf - A * (C * f')) / (f * f'), 0);
+    nsize = d * d3 * 8; %%% size of double %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(d / nbatch);
+    eb = floor(ebatch / d1);
+    idbatch = [1: eb: d2, d2 + 1];
+    nbatch = length(idbatch) - 1;
+    
+    b = zeros(d, 1);
+    for i = 1: nbatch
+        tmp = m.reg(1: d1, idbatch(i): idbatch(i + 1) - 1, 1: d3);
+        tmp = double(reshape(tmp, d1 * (idbatch(i + 1) - idbatch(i)), d3));
+        Yf = tmp * f';
+        b(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1)) = max((Yf - A(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1), :) * (C * f')) / (f * f'), 0);
+    end
     time = toc(hroi);
     disp(['Done refine roi, total time: ', num2str(time), ' seconds'])
 end

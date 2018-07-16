@@ -7,11 +7,11 @@ spatialr = 1; %%% no spatial downsampling %%%
 se = 5; %%% structure element for background removal %%%
 ismc = true; %%% run movement correction %%%
 flag = 1; %%% use auto seeds selection; 2 if manual %%%
-isvis = true; %%% do visualize %%%
+% isvis = true; %%% do visualize %%%
 ifpost = false; %%% set true if want to see post-process %%%
 
 %% main program %%
-[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, isvis);
+[fname, frname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag);
 
 %% plot some images %%
 load(fname)

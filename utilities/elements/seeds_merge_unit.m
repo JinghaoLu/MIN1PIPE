@@ -1,11 +1,11 @@
-function iduset = seeds_merge_unit(conmtx, Y, iduse)
+function iduset = seeds_merge_unit(conmtx, imax, iduse)
 % [roiout, sigout, seedsout, Pout] = merge_unit merge based on graph
 %   extracted rois
 %   Jinghao Lu 06/10/2016
 
     %% build image graph %%
     %%% initialize image graph %%%
-    img = max(Y, [], 3);
+    img = imax;
     img = imgaussfilt(img, 1);
     imgt = 1- normalize(img);
     [pixh, pixw] = size(img);

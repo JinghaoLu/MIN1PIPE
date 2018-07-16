@@ -6,6 +6,7 @@ function [p0, winsize] = cen_gen(Y)
     %%% contains sufficient information %%%
     szbd = [31, 31];
     Ymax = max(Y, [], 3);
+    Ymax = Ymax(4: end - 3, 4: end - 3);
     ithres = 0.5;
     n = 1;
     count = 0;
@@ -47,6 +48,6 @@ function [p0, winsize] = cen_gen(Y)
     else
         bb = bbc{idbest};
     end
-    p0 = flipud(round(bb(1: 2) + bb(3: 4) / 2)');
+    p0 = 3 + flipud(round(bb(1: 2) + bb(3: 4) / 2)');
     winsize = flipud((2 * floor(bb(3: 4) / 2) - 1)');
 end

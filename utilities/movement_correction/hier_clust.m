@@ -1,10 +1,17 @@
-function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl)
+function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
 % find boundaries of stable/nonstable sections
 %   Jinghao Lu, 05/15/2017
 
+    [pixh, pixw, nf] = size(m, 'reg');
     if nargin < 4 || isempty(scl)
         defpar = default_parameters;
         scl = defpar.mc_scl;
+    end
+ 
+    if nargin < 5 || isempty(stype)
+        defpar = default_parameters;
+        ttype = defpar.ttype;
+        stype = parse_type(ttype);
     end
     
     %% divide into sections %%
@@ -35,8 +42,8 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl)
     na = length(alen);
     idx = find(alen > na);
     for i = 1: length(idx)
-        nt = ceil((stp(idx(i)) - stt(idx(i))) / na);
-        nstp = (stp(idx(i)) - stt(idx(i))) / nt;
+        nt = ceil(alen(idx(i)) / na);
+        nstp = alen(idx(i)) / nt;
         tmp = stt(idx(i)): nstp: stp(idx(i));
         tmp = tmp(:);
         stt = [stt; round(tmp(2: end - 1))];
@@ -61,4 +68,20 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl)
         stp = stp(1: luse);
         flag = 0;
     end
+    
+    %% further adjust sections for memory fitness %%
+    alen = stp - stt;
+    nff = max(alen);
+    nsize = pixh * pixw * nff * stype; %%% size of single %%%
+    nbatch = batch_compute(nsize);
+    ebatch = round(nff / nbatch);
+    idx = find(alen > ebatch);
+    for i = 1: length(idx)
+        tmp = stt(idx(i)): ebatch: stp(idx(i));
+        tmp = tmp(:);
+        stt = [stt; round(tmp(2: end - 1))];
+        stp = [stp; round(tmp(2: end - 1)) - 1];
+    end
+    stt = sort(stt);
+    stp = sort(stp);    
 end

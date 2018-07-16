@@ -3,7 +3,7 @@ function Ydebg = bg_remove(Y, sz, ispara)
 % opening
 %   Jinghao Lu, 01/16/2016
 
-    hbg = tic;
+%     hbg = tic;
     %% initialization %%
     %%% initialize parameters %%%
     if nargin < 2 ||isempty(sz)
@@ -24,7 +24,7 @@ function Ydebg = bg_remove(Y, sz, ispara)
     
     %% begin removing background %%
     nframes = size(Y, 3);
-    Ydebg = zeros(size(Y(sz + 1: end - sz, sz + 1: end - sz, :)));
+    Ydebg = zeros(size(Y(sz + 1: end - sz, sz + 1: end - sz, :)), class(Y));
     k = strel('disk', sz);
     if ispara
         parfor i = 1: nframes
@@ -56,8 +56,8 @@ function Ydebg = bg_remove(Y, sz, ispara)
         end
     end
     
-    %%% norm after remove %%%
-    Ydebg = normalize(Ydebg);
-    time = toc(hbg);
-    disp(['Done bg remove, total time: ', num2str(time), ' seconds'])
+%     %%% norm after remove %%%
+%     Ydebg = normalize(Ydebg);
+%     time = toc(hbg);
+%     disp(['Done bg remove, total time: ', num2str(time), ' seconds'])
 end

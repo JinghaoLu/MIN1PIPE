@@ -1,4 +1,4 @@
-function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, isvis)
+function [file_name_to_save, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag)
 % main_processing
 %   need to decide whether to use parallel computing
 %   Fsi: raw sampling rate
@@ -38,10 +38,6 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
         flag = 1;
     end
     
-    if nargin < 7 || isempty(isvis)
-        isvis = false;
-    end
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%% parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% user defined parameters %%%                                     %%%
@@ -52,7 +48,6 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
                             %%% for UCLA, with 0.5 spatialr separately  %%%
                                                                         %%%
     %%% fixed parameters (change not recommanded) %%%                   %%%
-    Params.data_cat_ispara = 0;          %%% if parallel (data collect) %%%
     Params.anidenoise_iter = 4;                   %%% denoise iteration %%%
     Params.anidenoise_dt = 1/7;                  %%% denoise step size %%%
     Params.anidenoise_kappa = 0.5;       %%% denoise gradient threshold %%%
@@ -74,133 +69,115 @@ function [file_name_to_save, file_name_reg] = min1pipe(Fsi, Fsi_new, spatialr, s
     
     hpipe = tic;
     for i = 1: length(file_base)
-        %% data cat %%
-        ispara = Params.data_cat_ispara; %%% set to 0 if no need of parallel %%%
-        Fsi = Params.Fsi;
-        Fsi_new = Params.Fsi_new;
-        spatialr = Params.spatialr;
-        [frame_all, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr, ispara);
-%         disp(['Donenf #: ', num2str(nf)])
-
-        %% norm %%
-        norm_frame = normalize(frame_all);
-        imaxn = max(norm_frame, [], 3);
-        if isvis
-            data.norm_frame = norm_frame;
-        end
-        clear frame_all
-
-        %% get rough roi domain %%
-        mask = roi_domain(norm_frame);
-
-        %% anisotropic diffusion %%
-        ispara = Params.anidenoise_ispara;
-        sz = Params.neuron_size;
-        iter = Params.anidenoise_iter;
-        dt = Params.anidenoise_dt;
-        kappa = Params.anidenoise_kappa;
-        opt = Params.anidenoise_opt;
-        Yblur = anidenoise(norm_frame, sz, ispara, iter, dt, kappa, opt);
-        if isvis
-            data.Yblur = Yblur;
-        end
-        clear norm_frame
-
-        %% background remove %%
-        ispara = Params.bg_remove_ispara;
-        sz = Params.neuron_size;
-        Ydebg = bg_remove(Yblur, sz, ispara); %%% strel 9 for 540 * 720 (inscopix); 5 for ucla scope %%%
-        imaxy = max(Ydebg, [], 3);
-        if isvis
-            data.Ydebg = Ydebg;
-        end
-        clear Yblur
-
-        %% frame register %%
-        if ismc
-            pixs = min(pixh, pixw);
-            Params.mc_pixs = pixs;
-            Fsi_new = Params.Fsi_new;
-            scl = Params.mc_scl;
-            sigma_x = Params.mc_sigma_x;
-            sigma_f = Params.mc_sigma_f;
-            sigma_d = Params.mc_sigma_d;
-            [reg, corr_score, raw_score, scl] = frame_reg(Ydebg, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
-            Params.mc_scl = scl; %%% update latest scl %%%
-        else
-            reg = Ydebg;
-        end
         
-        if isvis
-            data.reg = reg;
-        end
-        clear Ydebg
-        time1 = toc(hpipe);
+        %%% judge whether do the processing %%%
+        filecur = [path_name, file_base{i}, '_data_processed.mat'];
+        msg = 'Redo the analysis? (y/n)';
+        overwrite_flag = judge_file(filecur, msg);
         
-        %% select pixel %%
-        if flag == 1
-            sz = Params.neuron_size;
+        if overwrite_flag
+            %% data cat %%
+            Fsi = Params.Fsi;
             Fsi_new = Params.Fsi_new;
-            sigthres = Params.pix_select_sigthres;
-            corrthres = Params.pix_select_corrthres;
-            [roi, sig, bg, bgf, seeds, datasmth0, cutoff0, pkcutoff0] = pix_select(reg, mask, sz, Fsi_new, sigthres, corrthres);
+            spatialr = Params.spatialr;
+            [m, imaxn, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
+            
+            %% get rough roi domain %%
+            mask = roi_domain(imeanf);
+            
+            %% neural enhancing batch version %%
+            filename_reg = [path_name, file_base{i}, '_reg.mat'];
+            [m, imaxy] = neural_enhance(m, filename_reg, Params);
+            
+            %% frame register %%
+            if ismc
+                pixs = min(pixh, pixw);
+                Params.mc_pixs = pixs;
+                Fsi_new = Params.Fsi_new;
+                scl = Params.mc_scl;
+                sigma_x = Params.mc_sigma_x;
+                sigma_f = Params.mc_sigma_f;
+                sigma_d = Params.mc_sigma_d;
+                [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+                Params.mc_scl = scl; %%% update latest scl %%%
+            end
+            
             time1 = toc(hpipe);
-        else
-            sz = Params.neuron_size;
-            Fsi_new = Params.Fsi_new;
-            [roi, sig, seeds, bg, bgf, datasmth0, cutoff0, pkcutoff0] = manual_seeds_select(reg, Fsi_new, sz);
-        end
-
-        %% parameter init %%
-        hpipe = tic;
-        [P, options] = par_init(reg);
-
-        %% refine roi %%
-        noise = P.sn;
-        ispara = Params.refine_roi_ispara;
-        [roirf, bgrf, sigupdt, seedsupdt, datasmthf1, cutofff1, pkcutofff1] = refine_roi(reg, sig, bgf, roi, seeds, noise, datasmth0, cutoff0, pkcutoff0, ispara);
-
-        %% refine sig %%
-        p = 0; %%% no ar model used %%%
-        [~, ~, Puse] = refine_sig(reshape(reg, pixh * pixw, nf), roirf, bgrf, sigupdt, bgf, p, options);
-
-        %% merge roi %%
-        corrthres = Params.merge_roi_corrthres;
-        [roimrg, sigmrg, seedsmrg, datasmthf2, cutofff2, pkcutofff2] = merge_roi(reg, roirf, sigupdt, seedsupdt, datasmthf1, cutofff1, pkcutofff1, corrthres);
-
-        %% refine roi again %%
-        Puse.p = 0;
-        Puse.options = options;
-        Puse.noise = noise;
-        ispara = Params.refine_roi_ispara;
-        [roifn, bgfn, sigupdt2, seedsfn] = refine_roi(reg, sigmrg, bgf, roimrg, seedsmrg, Puse.noise, datasmthf2, cutofff2, pkcutofff2, ispara);
-
-        %% refine sig again for raw sig %%
-        Puse.p = 0; %%% 0 ar model used %%%
-        [sigfnr, ~, ~] = refine_sig(reshape(reg, pixh * pixw, nf), roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
-        sigfnr = max(roifn, [], 1)' .* sigfnr;
-        roifnr = roifn ./ max(roifn, [], 1);
-
-        %% refine sig again %%
-        Puse.p = 2; %%% 2nd ar model used %%%
-        [sigfn, bgffn, ~] = refine_sig(reshape(reg, pixh * pixw, nf), roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
-
-        %% save data %%
-        imax = max(reg, [], 3);
-        file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
-        file_name_reg = [path_name, file_base{i}, '_reg.mat'];
-        
-        if ismc
-            save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
-        else
-            save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
-        end
-        
-        if isvis
+            
+            %% select pixel %%
+            if flag == 1
+                sz = Params.neuron_size;
+                Fsi_new = Params.Fsi_new;
+                sigthres = Params.pix_select_sigthres;
+                corrthres = Params.pix_select_corrthres;
+                [roi, sig, bg, bgf, seeds, datasmth0, cutoff0, pkcutoff0] = pix_select(m, mask, sz, Fsi_new, sigthres, corrthres);
+                time1 = toc(hpipe);
+            else
+                sz = Params.neuron_size;
+                Fsi_new = Params.Fsi_new;
+                [roi, sig, seeds, bg, bgf, datasmth0, cutoff0, pkcutoff0] = manual_seeds_select(m, Fsi_new, sz);
+            end
+            
+            %% parameter init %%
+            hpipe = tic;
+            [P, options] = par_init(m);
+            
+            %% refine roi %%
+            noise = P.sn;
+            ispara = Params.refine_roi_ispara;
+            [roirf, bgr, sigupdt, seedsupdt, datasmthf1, cutofff1, pkcutofff1] = refine_roi(m, sig, bgf, roi, seeds, noise, datasmth0, cutoff0, pkcutoff0, ispara);
+            
+            %% refine sig %%
+            p = 0; %%% no ar model used %%%
+            [sigrf, bgrf, Puse] = refine_sig(m, roirf, bgr, sigupdt, bgf, p, options);
+            
+            %% merge roi %%
+            corrthres = Params.merge_roi_corrthres;
+            [roimrg, sigmrg, seedsmrg, datasmthf2, cutofff2, pkcutofff2] = merge_roi(m, roirf, sigrf, seedsupdt, datasmthf1, cutofff1, pkcutofff1, corrthres);
+            
+            %% refine roi again %%
+            Puse.p = 0;
+            Puse.options = options;
+            Puse.noise = noise;
+            ispara = Params.refine_roi_ispara;
+            [roifn, bgfn, sigupdt2, seedsfn] = refine_roi(m, sigmrg, bgrf, roimrg, seedsmrg, Puse.noise, datasmthf2, cutofff2, pkcutofff2, ispara);
+            
+            %% refine sig again for raw sig %%
+            Puse.p = 0; %%% 0 ar model used %%%
+            [sigfnr, ~, ~] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
+            sigfnr = max(roifn, [], 1)' .* sigfnr;
+            roifnr = roifn ./ max(roifn, [], 1);
+            
+            %% refine sig again %%
+            Puse.p = 2; %%% 2nd ar model used %%%
+            [sigfn, bgffn, ~] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
+            
+            %% save data %%
+            stype = parse_type(class(m.reg(1, 1, 1)));
+            nsize = pixh * pixw * nf * stype; %%% size of single %%%
+            nbatch = batch_compute(nsize);
+            ebatch = ceil(nf / nbatch);
+            idbatch = [1: ebatch: nf, nf + 1];
+            nbatch = length(idbatch) - 1;
+            imax = zeros(pixh, pixw);
+            for j = 1: nbatch
+                tmp = m.reg(1: pixh, 1: pixw, idbatch(j): idbatch(j + 1) - 1);
+                imax = max(cat(3, max(tmp, [], 3), imax), [], 3);
+            end
+            
+            file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
+            delete(file_name_to_save)
+            
+            if ismc
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
+            else
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
+            end
+            
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
-            save(file_name_reg, 'data', '-v7.3')
         else
-            save(file_name_reg, 'reg', '-v7.3')
+            filename_reg = [path_name, file_base{i}, '_reg.mat'];
+            file_name_to_save = filecur;
         end
         
         time2 = toc(hpipe);

@@ -5,7 +5,7 @@ function YDeN = anidenoise(Y, sz, ispara, iter, dt, kappa, opt)
 %   Yblur is output image/sequence
 %   Jinghao Lu 05/17/2016
 
-    hani = tic;
+%     hani = tic;
     %% initialization %%    
     %%% initialize parameters %%%
     if nargin < 2 || isempty(sz)
@@ -40,7 +40,7 @@ function YDeN = anidenoise(Y, sz, ispara, iter, dt, kappa, opt)
     %%% prepare data %%%
     Y = padarray(Y, [sz, sz], 'replicate');
     nframes = size(Y, 3);
-    YDeN = zeros(size(Y));
+    YDeN = zeros(size(Y), class(Y));
         
 %     %%% examine and remove bad pixels %%%
 %     temp = max(Y, [], 3) - min(Y, [], 3);
@@ -75,8 +75,6 @@ function YDeN = anidenoise(Y, sz, ispara, iter, dt, kappa, opt)
         end
     end
     
-    %%% norm after remove %%%
-    YDeN = normalize(YDeN);
-    time = toc(hani);
-    disp(['Done anidenoise ', num2str(time), ' seconds'])    
+%     time = toc(hani);
+%     disp(['Done anidenoise ', num2str(time), ' seconds'])    
 end

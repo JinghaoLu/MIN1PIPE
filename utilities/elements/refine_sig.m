@@ -1,4 +1,4 @@
-function [C, f, Pnew, S, YrA] = refine_sig(Y, A, b, Cin, fin, p, options)
+function [C, f, Pnew, S, YrA] = refine_sig(m, A, b, Cin, fin, p, options)
 % [C, f, Pnew, S, YrA] = refine_sig refine signal by CNMF
 %   modified from E Pnevmatikakis
 %   Jinghao Lu 06/10/2016
@@ -24,7 +24,7 @@ function [C, f, Pnew, S, YrA] = refine_sig(Y, A, b, Cin, fin, p, options)
         options.temporal_parallel = defoptions.temporal_parallel; 
     end
 
-    [~,T] = size(Y);
+    [d1, d2, T] = size(m, 'reg');
     K = size(A, 2);
     A = [A, b];
     S = zeros(size(Cin));
@@ -32,7 +32,20 @@ function [C, f, Pnew, S, YrA] = refine_sig(Y, A, b, Cin, fin, p, options)
     C = Cin;
     nA = sum(A .^ 2);
     AA = (A' * A) / spdiags(nA(:), 0, length(nA), length(nA));
-    YA = (Y' * A) / spdiags(nA(:), 0, length(nA), length(nA));
+    
+    nsize = d1 * d2 * T * 8; %%% size of double %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(T / nbatch);
+    idbatch = [1: ebatch: T, T + 1];
+    nbatch = length(idbatch) - 1;
+
+    yat = zeros(T, size(A, 2));
+    for i = 1: nbatch
+        tmp = m.reg(1: d1, 1: d2, idbatch(i): idbatch(i + 1) - 1);
+        tmp = double(reshape(tmp, d1 * d2, (idbatch(i + 1) - idbatch(i))));
+        yat(idbatch(i): idbatch(i + 1) - 1, :) = tmp' * A;
+    end
+    YA = yat / spdiags(nA(:), 0, length(nA), length(nA));
     YrA = (YA - Cin' * AA);
     Pnew.gn = cell(K, 1);
     Pnew.b = cell(K, 1);

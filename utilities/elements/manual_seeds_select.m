@@ -1,4 +1,4 @@
-function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_seeds_select(frame, Fs, sz)
+function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_seeds_select(m, Fs, sz)
 % manually select seeds to use, and then auto-initialize
 %   Jinghao Lu, 02/06/2018
     
@@ -15,16 +15,39 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
     end
     
     %% manual input of seeds %%
-    [pixh, pixw, nf] = size(frame);
+    [pixh, pixw, nf] = size(m, 'reg');
+    stype = parse_type(class(m.reg(1, 1, 1)));
+    nsize = pixh * pixw * nf * stype; %%% size of single %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(nsel / nbatch);
+    idbatch = [1: ebatch: nf, nf + 1];
+    nbatch = length(idbatch) - 1;
+    imaxf = zeros(pixh, pixw);
+    for i = 1: nbatch
+        tmp = m.reg(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
+        imaxf = max(cat(3, max(tmp, [], 3), imaxf), [], 3);
+    end
     figure(1)
     clf
-    imagesc(max(frame, [], 3));
+    imagesc(imaxf);
     [x, y] = ginput;
     
     %% data preparation %%
     idusef = sub2ind([pixh, pixw], round(y), round(x));
-    datusef = reshape(frame, pixh * pixw, nf);
-    datusef = datusef(idusef, :);
+    datusef = zeros(length(idusef), nf);
+    stype = parse_type(class(m.reg(1, 1, 1)));
+    nsize = pixh * pixw * nf * stype; %%% size of single %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(nf / nbatch);
+    idbatch = [1: ebatch: nf, nf + 1];
+    nbatch = length(idbatch) - 1;
+    for i = 1: nbatch
+        tmp = m.reg(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
+        tmp = reshape(tmp, pixh * pixw, idbatch(i + 1) - idbatch(i));
+        datusef(:, idbatch(i): idbatch(i + 1) - 1) = tmp(idusef, :);
+%         disp(num2str(i))
+    end
+    
     gsw = 1 * Fs;
     datasmthf = convn(datusef, gausswin(gsw)' / sum(gausswin(gsw)), 'valid');
     st = sort(datasmthf, 2);
@@ -41,13 +64,12 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
     pkcutofff = st(minids);
 
     %% initialize roi and sig %%
-    res = frame;
     nseed = length(idusef);
     roi = zeros(pixh * pixw, nseed);
     sig = zeros(nseed, nf);
-    swin = 3 * sz;
-    cthres = 0.9; %%% previous 0.95 %%%
-    
+    swin = 2 * sz;
+    cthres = 0.9; %%% a high enough value for pixel clustering as initialization, not very important %%%
+        
     for i = 1: nseed
         %%% get the current seed position %%%
         [x, y] = ind2sub([pixh, pixw], idusef(i));
@@ -56,18 +78,19 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
         rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
         lsml = prod(diff(rg, 1, 2) + 1);
         ctr = [x - rg(1, 1) + 1, y - rg(2, 1) + 1];
-        a = res(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), :);
-        sa = frame(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), :);
+        sa = m.reg(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), :);
                 
         %%% pixel correlation %%%
-        tuse = vld_prd_slct(datasmthf(i, :), cutofff(i), pkcutofff(i));
+        tuset = vld_prd_slct(datasmthf(i, :), cutofff(i), pkcutofff(i));
+        tuse = false(1, nf);
+        tuse(round(gsw / 2): round(gsw / 2) + length(tuset) - 1) = tuset;
 
         %%% coarse spatial init %%%
         saa = reshape(sa, lsml, nf);
         daa = saa(:, tuse);
         datt = datusef(i, :);
         dat = datt(tuse);
-        ind = norm_inner(daa, dat') > cthres;
+        ind = corr(daa', dat') > cthres;
         ind = reshape(ind, diff(rg(1, :)) + 1, diff(rg(2, :)) + 1);
         [l, ~] = bwlabeln(ind);
         ii = l(ctr(1), ctr(2));
@@ -86,22 +109,23 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
         tmp(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2)) = atmp;
         roi(:, i) = reshape(tmp, pixh * pixw, 1);
         sig(i, :) = ctmp;
-        tmp = saa - reshape(atmp, lsml, 1) * ctmp;
-        
-        %%% update remaining dataset and find next %%%
-        res(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), :) = min(a, reshape(tmp, diff(rg(1, :)) + 1, diff(rg(2, :)) + 1, nf));
+
         if mod(i, round(nseed / 10)) == 0
             disp(['Done #', num2str(i), '/', num2str(nseed)])
         end
     end
     
-    roi = sparse(roi);
-      
-    %%% get background roi and sig (unnecessary) %%%
-    resmax = max(reshape(res, pixh * pixw, nf), 0);
-    W0 = mean(resmax, 2);
-    H0 = mean(resmax, 1);
-    bg = W0;
-    bgf = H0;
+    %%% get background roi and sig %%%
+    %%% compute residual spatial & temporal %%%
+    roiid = find(max(roi, [], 2) > 0);
+    tominus = zeros(1, nf);
+    for i = 1: length(roiid)
+        tmp = roi(roiid(i), :);
+        idt = tmp > 0;
+        tominus = tominus + max(tmp(idt)' .* sig(idt, :), [], 1);
+    end
+    bgf = (imeantf * pixh * pixw - tominus) / (pixh * pixw);
+    bg = (reshape(imeanf * nf, pixh * pixw, 1) - max(roi .* sum(sig, 2)', [], 2)) / nf;
+
     disp('Done manual pix select')
 end

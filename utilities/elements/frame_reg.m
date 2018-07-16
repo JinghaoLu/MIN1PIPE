@@ -1,36 +1,36 @@
-function [regfn, acorrf, acorr, scl] = frame_reg(Y, Fs, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, Fs, pixs, scl, sigma_x, sigma_f, sigma_d)
 % register movies with the hierarchical movement correction
 %   Jinghao Lu, 09/01/2017
 
     hreg = tic;
     %% initialization %%
     %%% initialize parameters %%%
-    if nargin < 2 || isempty(Fs)
+    [pixh, pixw, nf] = size(m, 'reg');
+    if nargin < 4 || isempty(Fs)
         defpar = default_parameters;
         Fs = defpar.Fsi_new;
     end
     
-    if nargin < 3 || isempty(pixs)
-        [pixh, pixw, ~] = size(Y);
+    if nargin < 5 || isempty(pixs)
         pixs = min(pixh, pixw);
     end
     
-    if nargin < 4 || isempty(scl)
+    if nargin < 6 || isempty(scl)
         defpar = default_parameters;
         scl = defpar.mc_scl;
     end
     
-    if nargin < 5 || isempty(sigma_x)
+    if nargin < 7 || isempty(sigma_x)
         defpar = default_parameters;
         sigma_x = defpar.mc_sigma_x;
     end
     
-    if nargin < 6 || isempty(sigma_f)
+    if nargin < 8 || isempty(sigma_f)
         defpar = default_parameters;
         sigma_f = defpar.mc_sigma_f;
     end
     
-    if nargin < 7 || isempty(sigma_d)
+    if nargin < 9 || isempty(sigma_d)
         defpar = default_parameters;
         sigma_d = defpar.mc_sigma_d;
     end
@@ -42,45 +42,72 @@ function [regfn, acorrf, acorr, scl] = frame_reg(Y, Fs, pixs, scl, sigma_x, sigm
         
     %%% preprocess Y first %%%
     dthres = 0.1;
-    mskpre = dominant_patch(Y, dthres);
-    Y = Y .* mskpre;
+    mskpre = dominant_patch(imaxn, dthres);
+    ttype = class(m.reg(1, 1, 1));
+    stype = parse_type(ttype);
+    nsize = pixh * pixw * nf * stype; %%% size of single %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(nf / nbatch);
+    idbatch = [1: ebatch: nf, nf + 1];
+    nbatch = length(idbatch) - 1;
+    for i = 1: nbatch
+        tmp = m.reg(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1) .* mskpre;
+        m.reg(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1) = tmp;
+    end
 
     %%% get translation score %%%
     fprintf('Begin initial computation of translation score \n')
-    acorr = get_trans_score(Y, [], [], 1);
+    nsize = pixh * pixw * nf * stype * 2; %%% size of single in parallel %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(nf / nbatch);
+    idbatch = [1: ebatch: nf, nf + 1];
+    nbatch = length(idbatch) - 1;
+    acorr = zeros(1, nf - 1);
+    for i = 1: nbatch
+        tmp = m.reg(1: pixh, 1: pixw, max(1, idbatch(i) - 1): idbatch(i + 1) - 1);
+        acorr(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1);
+    end
 
     %%% cluster movie into hierarchical stable-nonstable sections %%%
-    [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl); %%% flag: real or fake clusters %%%
+    [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m); %%% flag: real or fake clusters %%%
     time = toc(hreg);
     fprintf(['Done initialization, ', num2str(time), ' seconds \n'])
 
     %% intra-section registration %%
     fprintf('Begin intra-section \n')
-    reg_intra = intra_section(Y, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag);
+    m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag);
     time = toc(hreg);
     fprintf(['Done intra-section, ', num2str(time), ' seconds \n'])
     clear Y
 
     %% inter-section registration %%
     fprintf('Begin inter-section ... ')
-    [reg_inter, ~, ~] = inter_section(reg_intra, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
+    [m, ~, ~] = inter_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
     time = toc(hreg);
     fprintf(['Done inter-section, ', num2str(time), ' seconds \n'])
     clear reg_intra
 
     %% nonstable-section registration %%
     fprintf('Begin nonstable-section \n')
-    reg_nonstable = nonstable_section(reg_inter, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
+    m = nonstable_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
     time = toc(hreg);
     fprintf(['Done nonstable-section, ', num2str(time), ' seconds \n'])
     clear reg_inter
         
     %% final preparation for output %%
     %%% final score %%%
-    disp('Begin final computation of translation score')
-    acorrf = get_trans_score(reg_nonstable, [], [], 1);
-    regfn = reg_nonstable;
+    fprintf('Begin final computation of translation score')
+    nsize = pixh * pixw * nf * stype * 2; %%% size of single in parallel %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(nf / nbatch);
+    idbatch = [1: ebatch: nf, nf + 1];
+    nbatch = length(idbatch) - 1;
+    acorrf = zeros(1, nf - 1);
+    for i = 1: nbatch
+        tmp = m.reg(1: pixh, 1: pixw, max(1, idbatch(i) - 1): idbatch(i + 1) - 1);
+        acorrf(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1);
+    end
     time = toc(hreg);
-    disp(['Done frame reg, total time: ', num2str(time), ' seconds'])
+    fprintf(['Done frame reg, total time: ', num2str(time), ' seconds'])
 end
 

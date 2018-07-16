@@ -1,4 +1,4 @@
-function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(Y, roi, sig, seed, datasmthf, cutofff, pkcutofff, ethres)
+function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(m, roi, sig, seed, datasmthf, cutofff, pkcutofff, ethres)
 % [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi new merging criteria for
 %   extracted rois
 %   Jinghao Lu 06/10/2016
@@ -12,7 +12,7 @@ function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(Y
     end
         
     nseed = length(seed);
-    [d1, d2, d3] = size(Y);
+    [d1, d2, d3] = size(m, 'reg');
 
     %% compute overlapping rois %%
     %%% this should be done in terms of gaussian smoothed rois %%%

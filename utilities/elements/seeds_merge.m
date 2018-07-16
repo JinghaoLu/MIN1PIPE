@@ -1,4 +1,4 @@
-function [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(Y, iduse, datuse, datasmth, cutoff, pkcutoff, sz, corrthres)
+function [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(imax, iduse, datuse, datasmth, cutoff, pkcutoff, sz, corrthres)
 % merge seeds within a same ROI
 %   Jinghao Lu 05/20/2016
 
@@ -14,7 +14,7 @@ function [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(Y, iduse
         corrthres = defpar.pix_select_corrthres;
     end
     
-    [pixh, pixw, ~] = size(Y);
+    [pixh, pixw] = size(imax);
     nsd = length(iduse);
     
     %% compute signal similarity %%
@@ -35,7 +35,7 @@ function [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(Y, iduse
     corrdatat = corrdatat & ovlpdata;
     
     %% get the graph %%
-    iduset = seeds_merge_unit(corrdatat, Y, iduse);
+    iduset = seeds_merge_unit(corrdatat, imax, iduse);
     
     %% update variables %%
     idusef = iduse(iduset);

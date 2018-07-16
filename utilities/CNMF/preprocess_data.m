@@ -1,4 +1,4 @@
-function [P,Y] = preprocess_data(Y,p,options)
+function [P,m] = preprocess_data(m,p,options)
 
 % data pre-processing for:
 % (i)   identifying and interpolating missing entries (assumed to have the
@@ -36,21 +36,16 @@ if ~isfield(options,'cluster_pixels'); cluster_pixels = defoptions.cluster_pixel
 
 %% interpolate missing data
 
-if any(isnan(Y(:)))
-    Y_interp = interp_missing_data(Y);      % interpolate missing data
-    mis_data = find(Y_interp);
-    Y(mis_data) = Y_interp(mis_data);       % introduce interpolated values for initialization
-else
-    Y_interp = sparse(size(Y));
-    mis_data = [];
-end
+[pixh, pixw, nf] = size(m, 'reg');
+Y_interp = sparse(pixh * pixw, nf);
+mis_data = [];
 P.mis_values = full(Y_interp(mis_data));
 P.mis_entries = mis_data;
 
 %% estimate noise levels
 
 fprintf('Estimating the noise power for each pixel from a simple PSD estimate...');
-[sn, psx] = get_noise_fft(Y,options);
+[sn, psx] = get_noise_fft(m, options);
 P.sn = sn(:);
 fprintf('  done \n');
 end

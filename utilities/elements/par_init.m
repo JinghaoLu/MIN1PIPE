@@ -1,11 +1,11 @@
-function [P, options] = par_init(Y)
+function [P, options] = par_init(m)
 % [P, options] = par_init initialization for CNMF
 %   modified from E Pnevmatikakis
 %   Jinghao Lu 05/20/2016
 
-    [d1, d2, ~] = size(Y);                                % dimensions of dataset
+    [d1, d2, ~] = size(m, 'reg');                                % dimensions of dataset
 
-    P = preprocess_data(Y);
+    P = preprocess_data(m);
     
     options = CNMFSetParms(...                      
     'd1',d1,'d2',d2,...                         % dimensions of datasets
