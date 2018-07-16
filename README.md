@@ -66,7 +66,7 @@ Other modified functions adapted from others are credited the original sources i
 **Procedure Parameters**:
 - **`ismc`**: whether use movement correction module
 - **`flag`**: whether use automatic or semi_automatic seeds selection
-- **`isvis`**: whether visualize after processing, including results of each step
+- ~~**`isvis`**: whether visualize after processing, including results of each step~~
 - **`ifpost`**: whether use post-process
 
 **Key Outputs**:
