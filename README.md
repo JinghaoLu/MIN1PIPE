@@ -108,13 +108,15 @@ If post-process is selected, there will be an additional *".mat"* file created w
     - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" + *"indices"*. We suggest sticking to this format for *.tif* and *.tiff* data.
     - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"* + *"indices"*, and we suggest sticking to this format for *".avi"* data.
     - For best practice, remove apparent artifects such as bright edges of the grin lenses, even though the algorithm can handle these conditions.
-    - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand.
+    - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand;
+    - Usually it poses more difficulties (more time spent/less accuracy) on the movement correction module under such (few neurons/key information) circumstances.
 - Software
     - Matlab R2017 and later.
 - Hardware
     - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
     - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
-    - Memory mapping will be integrated in future.
+    - ~~Memory mapping will be integrated in future~~.
+    - Matlab parallel computing only supports NVIDIA graphic cards.
   
 ## References
 ***Updates***
