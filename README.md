@@ -66,15 +66,15 @@ Other modified functions adapted from others are credited the original sources i
 **Procedure Parameters**:
 - **`ismc`**: whether use movement correction module
 - **`flag`**: whether use automatic or semi_automatic seeds selection
-- **`isvis`**: whether visualize after processing, including results of each step
+- ~~**`isvis`**: whether visualize after processing, including results of each step~~
 - **`ifpost`**: whether use post-process
 
 **Key Outputs**:
-- **`roifn`**: processed vectorized ROI footprints
-- **`sigfn`**: processed calcium traces of corresponding ROIs
+- **`roifn`**: processed vectorized ROI footprints; contains single cell in each column (vectorized spatial map)
+- **`sigfn`**: processed calcium traces of corresponding ROIs; contains single cell in each row (calcium trace)
 - **`roifnr`**: processed vectorized ROI footprints without calcium deconvolution
 - **`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"
-- **`seedsfn`**: ROI centers in pixel coordinates
+- **`seedsfn`**: ROI centers in pixel coordinates; indices of all ROIs and be converted to (h, w) position using ```ind2sub```
 - **`Params`**: used parameters
 - **`reg`**: data after neural enhancing (and movement correction), saved for reprocessing
 
@@ -97,19 +97,26 @@ To use the code on a custom dataset, no specific requirements are needed. The pr
 If post-process is selected, there will be an additional *".mat"* file created with *"_data_processed_refined"*.
 
 ## Practical Suggestions
+***Updates***
+***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
+
+---
+
 - Data tips
     - Data should be arranged in sessions.
     - Each session contains multiple videos automatically divided by the recording softwares.
     - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" + *"indices"*. We suggest sticking to this format for *.tif* and *.tiff* data.
     - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"* + *"indices"*, and we suggest sticking to this format for *".avi"* data.
     - For best practice, remove apparent artifects such as bright edges of the grin lenses, even though the algorithm can handle these conditions.
-    - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand.
+    - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand;
+    - Usually it poses more difficulties (more time spent/less accuracy) on the movement correction module under such (few neurons/key information) circumstances.
 - Software
     - Matlab R2017 and later.
 - Hardware
     - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
     - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
-    - Memory mapping will be integrated in future.
+    - ~~Memory mapping will be integrated in future~~.
+    - Matlab parallel computing only supports NVIDIA graphic cards.
   
 ## References
 ***Updates***
