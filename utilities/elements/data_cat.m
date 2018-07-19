@@ -154,7 +154,7 @@ function [m, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, fil
                         stt = stto;
                     else
                         fid = fopen([path_name, dir_use{ib}{i}], 'r');
-                        headert = fread(fid, 5000, dtype);
+                        headert = fread(fid, 5000, [dtype, '=>', dtype]);
                         headert = headert(:)';
                         h1 = strfind(headert, 'movi');
                         dlen = headert(h1 + 8: h1 + 11);
