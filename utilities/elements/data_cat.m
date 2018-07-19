@@ -90,6 +90,7 @@ function [m, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, fil
     f_idx = f_idx(f_use);
     dir_idx = dir_idx(f_use);
     nf = length(f_use);
+    cnft = unique([find(diff(f_idx) < 0), nf]);
     dir_uset = unique(dir_idx, 'stable');
 %     dir_idt = [dir_idt; nf + 1];
     
@@ -106,7 +107,6 @@ function [m, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, fil
     %%% extract batch-wise frame info %%%
     idbatch = [1: ebatch: nf, nf + 1];
     nbatch = length(idbatch) - 1;
-    cnft = cumsum(nft);
     rg = sort([cnft + 1, idbatch(1: end-1)]);
     bcount = 1;
     dir_use = cell(1, nbatch);
