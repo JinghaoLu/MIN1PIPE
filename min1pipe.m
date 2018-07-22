@@ -1,4 +1,4 @@
-function [file_name_to_save, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag)
+function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag)
 % main_processing
 %   need to decide whether to use parallel computing
 %   Fsi: raw sampling rate
@@ -80,7 +80,7 @@ function [file_name_to_save, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se
             Fsi = Params.Fsi;
             Fsi_new = Params.Fsi_new;
             spatialr = Params.spatialr;
-            [m, imaxn, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
+            [m, filename_raw, imaxn, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
             
             %% get rough roi domain %%
             mask = roi_domain(imeanf);
@@ -176,6 +176,7 @@ function [file_name_to_save, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se
             
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
         else
+            filename_raw = [path_name, file_base{i}, '_frame_all.mat'];
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
             file_name_to_save = filecur;
         end
