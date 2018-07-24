@@ -1,4 +1,4 @@
-function [m, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, file_fmt, Fsi, Fsi_new, ratio, ttype)
+function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, file_fmt, Fsi, Fsi_new, ratio, ttype)
 % Concatinate data pieces from raw 4GB-tiff chunks
 %   or avi files from UCLA miniscope
 %   parallel or serial version supported
