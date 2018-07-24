@@ -117,8 +117,9 @@ The toolbox is undergoing some beta tests, so **please expect frequent updates r
 - Hardware
     - Better hardwares are always preferred, for professional data analysis such as in the regular lab environment, even though the algorithms can be adapted to personal computers.
     - Typically, ~4 times of the size of a single session dataset (after downsampling) of memory is recommanded for processing.
-    - ~~Memory mapping will be integrated in future~~.
+    - ~~Memory mapping will be integrated in future~~ Future arrived.
     - Matlab parallel computing only supports NVIDIA graphic cards.
+    - Patch version requires sufficient space in local hard disk (especially the disk containing the dataset currently running).
   
 ## References
 ***Updates***
