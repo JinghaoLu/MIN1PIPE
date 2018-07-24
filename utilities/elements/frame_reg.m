@@ -78,21 +78,18 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, Fs, pixs, scl, sigma_x, s
     m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag);
     time = toc(hreg);
     fprintf(['Done intra-section, ', num2str(time), ' seconds \n'])
-    clear Y
 
     %% inter-section registration %%
     fprintf('Begin inter-section ... ')
     [m, ~, ~] = inter_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
     time = toc(hreg);
     fprintf(['Done inter-section, ', num2str(time), ' seconds \n'])
-    clear reg_intra
 
     %% nonstable-section registration %%
     fprintf('Begin nonstable-section \n')
     m = nonstable_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d);
     time = toc(hreg);
     fprintf(['Done nonstable-section, ', num2str(time), ' seconds \n'])
-    clear reg_inter
         
     %% final preparation for output %%
     %%% final score %%%

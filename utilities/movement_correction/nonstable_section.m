@@ -94,10 +94,15 @@ function m = nonstable_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d
         
         %%% augment edge blocks %%%
         if bstt(1) == 1
-            regpara{1} = cat(3, regpara{1}(:, :, end), regpara{1});
+            if i == 1
+                regpara{1} = cat(3, regpara{1}(:, :, end), regpara{1});
+            end
         end
+        
         if bstp(end) == nf
-            regpara{end} = cat(3, regpara{end}, regpara{end}(:, :, 1));
+            if i == nbatch
+                regpara{end} = cat(3, regpara{end}, regpara{end}(:, :, 1));
+            end
         end
         
         %% LK-LogDemons %%
