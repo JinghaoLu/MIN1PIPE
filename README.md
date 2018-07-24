@@ -99,7 +99,7 @@ If post-process is selected, there will be an additional *".mat"* file created w
 ## Practical Suggestions
 ***Updates***
 ***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
-The toolbox is undergoing some beta tests, so please expect frequent updates recently.
+The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
 
 ---
 
