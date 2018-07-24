@@ -4,15 +4,22 @@
 MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range problems in 1-photon calcium imaging in one package: *`data enhancement`* &rarr; *`movement morrection`* &rarr; *`signal extraction`*. It requires minimal parameter-tuning and integrates the semi-auto options. Each inidividual module can also be easily adapted for the 2-photon imaging setting.
 
 ## Contents
-1. [Introduction and Features](#introduction-and-features)
-2. [Dependencies](#dependencies)
-3. [Usage](#usage)
-4. [Dataset](#dataset)
-5. [Custom Data](#custom-data)
-6. [Practical Suggestions](#practical-suggestions)
-7. [References](#references)
-8. [Updates](#updates)
+1. [Updates](#updates)
+2. [Introduction and Features](#introduction-and-features)
+3. [Dependencies](#dependencies)
+4. [Usage](#usage)
+5. [Dataset](#dataset)
+6. [Custom Data](#custom-data)
+7. [Practical Suggestions](#practical-suggestions)
+8. [References](#references)
 9. [Questions](#questions)
+
+
+## Updates
+***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
+The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
+
+---
 
 ## Introduction and Features
 MIN1PIPE contains the following three modules:
@@ -72,6 +79,7 @@ Other modified functions adapted from others are credited the original sources i
 **Key Outputs**:
 - **`roifn`**: processed vectorized ROI footprints; contains single cell in each column (vectorized spatial map)
 - **`sigfn`**: processed calcium traces of corresponding ROIs; contains single cell in each row (calcium trace)
+- **`spkfn`**: spike train inferred from [`refine_sig.m`](./refine_sig.m)
 - **`roifnr`**: processed vectorized ROI footprints without calcium deconvolution
 - **`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"
 - **`seedsfn`**: ROI centers in pixel coordinates; indices of all ROIs and be converted to (h, w) position using ```ind2sub```
@@ -97,12 +105,6 @@ To use the code on a custom dataset, no specific requirements are needed. The pr
 If post-process is selected, there will be an additional *".mat"* file created with *"_data_processed_refined"*.
 
 ## Practical Suggestions
-***Updates***
-***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
-The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
-
----
-
 - Data tips
     - Data should be arranged in sessions.
     - Each session contains multiple videos automatically divided by the recording softwares.
@@ -159,9 +161,6 @@ or the related [arXiv version](https://arxiv.org/abs/1704.00793):
   year={2017}
 }
 ```
-
-## Updates
-
 
 ## Questions?
 Please email to [`min1pipe2018@gmail.com`](mailto:min1pipe2018@gmail.com) for additional questions.
