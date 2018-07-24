@@ -150,7 +150,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             
             %% refine sig again %%
             Puse.p = 2; %%% 2nd ar model used %%%
-            [sigfn, bgffn, ~] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
+            [sigfn, bgffn, ~, spkfn] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
             
             %% save data %%
             stype = parse_type(class(m.reg(1, 1, 1)));
@@ -169,9 +169,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             delete(file_name_to_save)
             
             if ismc
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
             else
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
             end
             
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
