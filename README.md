@@ -19,6 +19,8 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 ***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
 The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
 
+***08/02/2018*** Added guide for [`manual_seeds_select`](./manual_seeds_select) and [`real_neuron_select`](./real_neuron_select) under the secion [Usage](#usage).
+
 ---
 
 ## Introduction and Features
@@ -63,6 +65,24 @@ Other modified functions adapted from others are credited the original sources i
     - For multi-video datasets automatically divided by the data acquisition softwares, only the first (or a random video of the session) needs choosing. 
     - The algorithm will automatically judge the format of the datasets.
     - Currently support: *.avi*, *.tif* and *.tiff*.
+
+**Manual Options**
+- [`manual_seeds_select`](./manual_seeds_select)
+    - A figure will pop up, including: max progection of the video after the neural enhancing and movement correction. 
+    - The user needs to click on the center of potentail neurons once
+    - A red dot appears at the same position indicating that the seed has been successfully selected. 
+    - Press 'Enter' if all seeds are selected.
+    
+- [`real_neuron_select`](./real_neuron_select)
+    - The goal of this function is to collect the set of false-positive ROIs that the user selects.
+    - A figure will pop up, including: 2 X max progection of the video after the neural enhancing and movement correction + 10 calcium traces/session.
+    - The user can freely click on the calcium traces, or the max projection map (bottom max map) to indicate the **false positive** that should be removed.
+    - To do this, move the mouse cursor at the corresponding position, until a red contour of that ROI is shown on the map (bottom max map). 
+    - Click to select that ROI, either on the calcium trace area or the max map area.
+    - A red dot of the center of the selected ROI is shown on the top max map.
+    - To terminate the current session, press 'Enter'.
+    - The function will automatically open the next session, until all sessions are looped.
+    - A .mat file with 'filename_refined.mat' will be created in the same folder with refined key output variables.
 
 **Key Parameters**:
 - **`Fsi`**: frame rate of original video
