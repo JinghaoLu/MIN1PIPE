@@ -69,7 +69,7 @@ function m = nonstable_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d
     df = bstp - bstt + 1;
     dfc = cumsum(df);
     nff = dfc(end);
-    nsize = pixh * pixw * nff * 8 * feature('numCores'); %%% size of double %%%
+    nsize = pixh * pixw * nff * 8 * feature('numCores') * 4; %%% 8: size of double; 4: rough running size of logdemons %%%
     nbatch = batch_compute(nsize);
     ebatch = ceil(nff / nbatch);
 
