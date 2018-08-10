@@ -30,6 +30,8 @@ MIN1PIPE contains the following three modules:
 - **`Movement Correction`**: remove field of view movement with a specially designed hierarchical nonrigid movement correction module (integrating KLT Tracker and LogDemons deformation registration method), which is free of assumption about movement type and amplitude.
 - **`Neural Signal Extraction`**: identify neuronal ROIs and corresponding calcium traces with minimal false positive rates (incorporating GMM, LSTM as true neuron selector and modified CNMF as spatiotemporal calcium signal identifier)
 
+![alt text](./demo/MIN1PIPE_Graphical_Abstract.jpg)
+
 **Additional Features**
 - **`Semi-auto options`**: we also provide semi-auto options, including
   - Automated manual seeds selection module: for users who want to manually select seeds of neuron ROIs that will result in **ZERO** false positives
