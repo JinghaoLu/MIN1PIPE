@@ -1,4 +1,4 @@
-![alt text](./demo/MIN1PIPE_Slider.jpg | width = 80)
+![slider](./demo/MIN1PIPE_Slider.jpg = 80)
 # MIN1PIPE
 [A **MIN**iscope **1**-photon-based Calcium Imaging Signal Extraction **PIPE**line](https://www.biorxiv.org/content/early/2018/04/30/311548). 
 
