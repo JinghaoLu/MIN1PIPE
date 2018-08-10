@@ -41,7 +41,7 @@ function [Mp, sx, sy] = logdemons(F, M, isgpu, nlevel, sigma_x, sigma_fluid, sig
     sigma_i = 1; % weight on similarity term
     do_display = 0;   % display iterations
 
-    if isgpu || ~isa(F, 'gpuArray')
+    if isgpu && ~isa(F, 'gpuArray')
         FF = gpuArray(F);
         MM = gpuArray(M);
     else
@@ -317,7 +317,7 @@ function e = energy(F, M, sx, sy, sigma_i, sigma_x)
 end
 
 %% Pad image
-function [I,lim] = imagepad(I,scale, isgpu)
+function [I,lim] = imagepad(I, scale, isgpu)
 
     if nargin < 2
         scale = 2;
