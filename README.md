@@ -1,4 +1,4 @@
-![alt text](./demo/MIN1PIPE_Slider.jpg)
+![alt text](./demo/MIN1PIPE_Slider.jpg | width = 80)
 # MIN1PIPE
 [A **MIN**iscope **1**-photon-based Calcium Imaging Signal Extraction **PIPE**line](https://www.biorxiv.org/content/early/2018/04/30/311548). 
 
@@ -30,7 +30,7 @@ MIN1PIPE contains the following three modules:
 - **`Movement Correction`**: remove field of view movement with a specially designed hierarchical nonrigid movement correction module (integrating KLT Tracker and LogDemons deformation registration method), which is free of assumption about movement type and amplitude.
 - **`Neural Signal Extraction`**: identify neuronal ROIs and corresponding calcium traces with minimal false positive rates (incorporating GMM, LSTM as true neuron selector and modified CNMF as spatiotemporal calcium signal identifier)
 
-![alt text](./demo/MIN1PIPE_Graphical_Abstract.jpg)
+![alt text](./demo/MIN1PIPE_Graphical_Abstract.jpg | width = 80)
 
 **Additional Features**
 - **`Semi-auto options`**: we also provide semi-auto options, including
