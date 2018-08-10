@@ -46,7 +46,7 @@ MIN1PIPE contains the following three modules:
 ## Dependencies
 This Matlab implementation has the following dependencies (included under [`utilities`](./utilities)):
 - Modified [CNMF](https://github.com/flatironinstitute/CaImAn-MATLAB)
-    - [CVX](http://cvxr.com/cvx/): for OS other than Windows, users should download correpsonding CVX toolbox and replace the folder CVX in the codes.
+    - [CVX](http://cvxr.com/cvx/): ~~for OS other than Windows, users should download correpsonding CVX toolbox and replace the folder CVX in the codes.~~ the package automatically determines the platform, then downloads and installs the appropriate version.
 
 **Additional Matlab toolboxes**:
 - Computer Vision System Toolbox
