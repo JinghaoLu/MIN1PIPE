@@ -146,7 +146,7 @@ function [Mp, sx, sy, vx, vy] = register(F, M, opt, isgpu)
     for iter = 1: opt.niter
 
         % Find update
-        [ux,uy] = findupdate(F, M, vx, vy, opt.sigma_i, opt.sigma_x);
+        [ux, uy] = findupdate(F, M, vx, vy, opt.sigma_i, opt.sigma_x);
 
         % Regularize update
         ux = imgaussfilt(ux, opt.sigma_fluid);
