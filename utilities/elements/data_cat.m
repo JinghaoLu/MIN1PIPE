@@ -46,7 +46,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             dirs{i} = dirst(i).name;
             if contains(file_fmt, 'avi')
                 info = matlab.internal.VideoReader([path_name, dirs{i}]);
-                ts = Timestamps;
+                ts = info.Timestamps;
                 nft(i) = length(ts);
                 temp1 = strfind(dirs{i}, file_base);
                 temp2 = strfind(dirs{i}, '.');
