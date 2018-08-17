@@ -25,6 +25,8 @@ The toolbox is undergoing some beta tests, so **please expect frequent updates r
 
 ***08/02/2018*** Added guide for [`manual_seeds_select`](./manual_seeds_select) and [`real_neuron_select`](./real_neuron_select) under the secion [Usage](#usage).
 
+***08/16/2018*** Added reading interface for .mat file format.
+
 ---
 
 ## Introduction and Features
