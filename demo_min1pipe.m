@@ -78,6 +78,7 @@ ttype = class(mraw.frame_all(1, 1, 1));
 stype = parse_type(ttype);
 dss = 2;
 dst = 2;
+nf = size(sigfn, 2);
 nsize = pixh * pixw * nf * stype * 6 / (dss ^ 2); %%% size of single %%%
 nbatch = batch_compute(nsize);
 ebatch = ceil(nf / nbatch);
