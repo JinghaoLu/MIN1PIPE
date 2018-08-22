@@ -183,7 +183,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                         %%% update counter %%%
                         rgcount = rgcount + 1;
                     end
-                else
+                elseif contains(file_fmt, 'tif') || contains(file_fmt, 'tiff')
                     for i = 1: length(dir_use{ib})
                         %%% prepare file %%%
                         info = imfinfo([path_name, dir_use{ib}{i}]);
