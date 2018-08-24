@@ -30,7 +30,18 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
     figure(1)
     clf
     imagesc(imaxf);
-    [x, y] = ginput;
+    hold on
+    key = 'NaN';
+    x = [];
+    y = [];
+    while ~isempty(key)
+        [xt, yt, key] = ginput(1);
+        plot(xt, yt, '.r')
+        x = [x, xt];
+        y = [y, yt];
+    end
+    hold off
+    close
     
     %% data preparation %%
     idusef = sub2ind([pixh, pixw], round(y), round(x));
@@ -41,9 +52,13 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
     ebatch = ceil(nf / nbatch);
     idbatch = [1: ebatch: nf, nf + 1];
     nbatch = length(idbatch) - 1;
+    imeantf = zeros(1, nf);
+    imeanf = zeros(pixh, pixw);
     for i = 1: nbatch
         tmp = m.reg(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
+        imeanf = (imeanf * (idbatch(i) - idbatch(1)) + double(sum(tmp, 3))) / (idbatch(i + 1) - idbatch(1));
         tmp = reshape(tmp, pixh * pixw, idbatch(i + 1) - idbatch(i));
+        imeantf(idbatch(i): idbatch(i + 1) - 1) = double(mean(tmp, 1));
         datusef(:, idbatch(i): idbatch(i + 1) - 1) = tmp(idusef, :);
 %         disp(num2str(i))
     end
