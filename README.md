@@ -27,6 +27,8 @@ The toolbox is undergoing some beta tests, so **please expect frequent updates r
 
 ***08/16/2018*** Added reading interface for .mat file format.
 
+***08/23/2018*** Fixed bug of [`manual_seeds_select`](./manual_seeds_select).
+
 ---
 
 ## Introduction and Features
