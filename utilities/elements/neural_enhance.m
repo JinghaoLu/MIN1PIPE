@@ -1,4 +1,4 @@
-function [m_out, imaxf] = neural_enhance(m_in, filename, Params)
+function [m_out, imaxf, overwrite_flag] = neural_enhance(m_in, filename, Params)
 % batch version of anisotropic diffusion & background removal
 %   Jinghao Lu, 07/01/2018
 

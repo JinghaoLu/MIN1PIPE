@@ -87,10 +87,10 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             
             %% neural enhancing batch version %%
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
-            [m, imaxy] = neural_enhance(m, filename_reg, Params);
+            [m, imaxy, overwrite_flag] = neural_enhance(m, filename_reg, Params);
             
             %% frame register %%
-            if ismc
+            if ismc && overwrite_flag
                 pixs = min(pixh, pixw);
                 Params.mc_pixs = pixs;
                 Fsi_new = Params.Fsi_new;
