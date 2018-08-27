@@ -17,7 +17,10 @@ function [m_out, imaxf, overwrite_flag] = neural_enhance(m_in, filename, Params)
     nbatch = length(idbatch) - 1;
     
     if overwrite_flag
-        delete(filename)
+        if exist(filename, 'file')
+            delete(filename)
+        end
+        
         %% anisotropic diffusion preparation %%
         isparaad = Params.anidenoise_ispara;
         szad = Params.neuron_size;

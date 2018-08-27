@@ -139,7 +139,9 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
         iminf = zeros(pixh, pixw);
         imeanf = zeros(pixh, pixw);
         if overwrite_flag
-            delete(filename);
+            if exist(filename, 'file')
+                delete(filename);
+            end
             rgcount = 1;
             stto = [];
             fname_useo = [];
@@ -270,7 +272,9 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
         imeanf = zeros(pixh, pixw);
         idbatchn = ones(size(idbatch));
         if overwrite_flag
-            delete(filename);   
+            if exist(filename, 'file')
+                delete(filename);
+            end
             for ib = 1: nbatch
                 iddt = idd(idbatch(ib): idbatch(ib + 1) - 1);
                 eval(['tmp = mm.', vnames{1}, '(1: pixh, 1: pixw, idbatch(ib): idbatch(ib + 1) - 1);'])
