@@ -23,9 +23,11 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 ***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
 The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
 
-***08/02/2018*** Added guide for [`manual_seeds_select`](./manual_seeds_select) and [`real_neuron_select`](./real_neuron_select) under the secion [Usage](#usage).
+***08/02/2018*** Added guide for [`manual_seeds_select`](./utilities/elements/manual_seeds_select.m) and [`real_neuron_select`](./utilities/postprocess/real_neuron_select.m) under the secion [Usage](#usage).
 
 ***08/16/2018*** Added reading interface for .mat file format.
+
+***08/23/2018*** Fixed bug of [`manual_seeds_select`](./utilities/elements/manual_seeds_select.m).
 
 ---
 
@@ -77,13 +79,13 @@ Other modified functions adapted from others are credited the original sources i
     - Currently support: *.avi*, *.tif* and *.tiff*.
 
 **Manual Options**
-- [`manual_seeds_select`](./manual_seeds_select)
+- [`manual_seeds_select`](./utilities/elements/manual_seeds_select.m)
     - A figure will pop up, including: max progection of the video after the neural enhancing and movement correction. 
     - The user needs to click on the center of potentail neurons once
     - A red dot appears at the same position indicating that the seed has been successfully selected. 
     - Press 'Enter' if all seeds are selected.
     
-- [`real_neuron_select`](./real_neuron_select)
+- [`real_neuron_select`](./utilities/postprocess/real_neuron_select.m)
     - The goal of this function is to collect the set of false-positive ROIs that the user selects.
     - A figure will pop up, including: 2 X max progection of the video after the neural enhancing and movement correction + 10 calcium traces/session.
     - The user can freely click on the calcium traces, or the max projection map (bottom max map) to indicate the **false positive** that should be removed.
@@ -109,7 +111,7 @@ Other modified functions adapted from others are credited the original sources i
 **Key Outputs**:
 - **`roifn`**: processed vectorized ROI footprints; contains single cell in each column (vectorized spatial map)
 - **`sigfn`**: processed calcium traces of corresponding ROIs; contains single cell in each row (calcium trace)
-- **`spkfn`**: spike train inferred from [`refine_sig.m`](./refine_sig.m)
+- **`spkfn`**: spike train inferred from [`refine_sig.m`](./utilities/elements/refine_sig.m)
 - **`roifnr`**: processed vectorized ROI footprints without calcium deconvolution
 - **`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"
 - **`seedsfn`**: ROI centers in pixel coordinates; indices of all ROIs and be converted to (h, w) position using ```ind2sub```
