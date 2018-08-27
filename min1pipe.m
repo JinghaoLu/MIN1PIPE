@@ -166,7 +166,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             end
             
             file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
-            delete(file_name_to_save)
+            if exist(file_name_to_save, 'file')
+                delete(file_name_to_save)
+            end
             
             if ismc
                 save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
