@@ -36,9 +36,6 @@ function [Mp, sx, sy] = logdemons(F, M, isgpu, nlevel, sigma_x, sigma_fluid, sig
         defpar = default_parameters;
         sigma_diffusion = defpar.mc_sigma_d;
     end
-        
-    %%% select the gpu %%%
-    select_gpu;
     
     niter = 250;
     sigma_i = 1; % weight on similarity term

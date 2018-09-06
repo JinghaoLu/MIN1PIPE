@@ -39,6 +39,9 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, Fs, pixs, scl, sigma_x, s
     if isempty(gcp('nocreate'))
         parpool(feature('numCores'));
     end
+    
+    %%% select gpu %%%
+    select_gpu;
         
     %%% preprocess Y first %%%
     dthres = 0.1;
