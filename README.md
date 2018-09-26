@@ -21,6 +21,7 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 
 ## Updates
 ***09/26/2018*** Updated data loading interface, for Doric scope videos with bit depth of 16.
+
 ***07/16/2018*** Patch version released. The program auto-detects available memory and processes data in chunk. Integrate fast read&write and memory mapping at key steps.
 The toolbox is undergoing some beta tests, so **please expect frequent updates recently**.
 
