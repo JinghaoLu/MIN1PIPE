@@ -189,7 +189,8 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                     for i = 1: length(dir_use{ib})
                         %%% prepare file %%%
                         info = imfinfo([path_name, dir_use{ib}{i}]);
-                        m = memmapfile([path_name, dir_use{ib}{i}], 'format', dtype);
+%                         m = memmapfile([path_name, dir_use{ib}{i}], 'format', dtype);
+                        m = memmapfile([path_name, dir_use{ib}{i}], 'format', 'uint8');
                         d_raw = m.Data;
                         
                         %%% get key header info %%%
@@ -207,10 +208,14 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                         
                         %%% create frames %%%
                         scl = info(1).BitDepth / 8;
-                        stt = stt / scl;
-                        ndframe = pixho * pixwo;
+%                         stt = stt / scl;
+                        ndframe = pixho * pixwo * scl;
                         for ii = rg(rgcount): rg(rgcount + 1) - 1
-                            frame = reshape(d_raw(stt(f_idx(ii)) + 1: stt(f_idx(ii)) + ndframe), pixwo, pixho)';
+                            ftmp = typecast(d_raw(stt(f_idx(ii)) + 1: stt(f_idx(ii)) + ndframe), dtype);
+                            if strcmp(info(1).ByteOrder, 'big-endian')
+                                ftmp = swapbytes(ftmp);
+                            end
+                            frame = reshape(ftmp, pixwo, pixho)';
                             frame_all(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
                             if mod(ii, 100) == 0
                                 disp(num2str(ii))
