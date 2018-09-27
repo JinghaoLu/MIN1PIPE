@@ -171,9 +171,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             end
             
             if ismc
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params');
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params', '-v7.3');
             else
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params');
+                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
             end
             
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
