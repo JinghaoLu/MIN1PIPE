@@ -1,9 +1,11 @@
-function [thres, wid, jud] = hist_gauss(sig)
+function [thres, wid, jud] = hist_gauss(sig, alf)
 % Gauss fit of the 1d signal distribution
 %   Jinghao Lu, 06/16/2016
 
     %% initialize %%
-    alf = 0.01;
+    if nargin < 2
+        alf = 0.01;
+    end
     nbins = round(length(sig) / 10);
     
     %% gauss fit %%

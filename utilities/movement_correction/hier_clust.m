@@ -16,13 +16,15 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     
     %% divide into sections %%
     flag = 1;
-    try
-        thres1 = gmm_bg(acorr);
-    catch
-        thres1 = hist_gauss(acorr);
-        thres1 = min(2 * mad(acorr) + median(acorr), thres1);
+    threst1 = hist_gauss(acorr, 0.1);
+    threst = scl * pixs;
+    thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
+    thres1 = min(4 * mad(acorr) + median(acorr), thres1);
+    if threst1 > threst
+        thres = thres1;
+    else
+        thres = min(threst, thres1); %%% no more than scl (percentage0) of the image size %%%
     end
-    thres = min(scl * pixs, thres1); %%% no more than scl (percentage0) of the image size %%%
     scl = thres / pixs; %%% update new scl %%%
     ids = acorr > thres;
     ids = ~(imdilate(ids, strel('disk', round(Fs / 5)))); %%% small dilation with small threshold: 0.2s each side %%%
