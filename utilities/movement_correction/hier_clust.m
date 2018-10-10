@@ -18,7 +18,8 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     flag = 1;
     threst1 = hist_gauss(acorr, 0.1);
     threst = scl * pixs;
-    thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
+%     thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
+    thres1 = 2 * hist_gauss(acorr, 0.5);
     thres1 = min(4 * mad(acorr) + median(acorr), thres1);
     if threst1 > threst
         thres = thres1;
