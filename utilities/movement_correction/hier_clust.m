@@ -16,32 +16,36 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     
     %% divide into sections %%
     flag = 1;
-    threst1 = hist_gauss(acorr, 0.1);
+%     threst1 = hist_gauss(acorr, 0.1);
+%     threst = scl * pixs;
+% %     thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
+%     thres1 = 2 * hist_gauss(acorr, 0.5);
+    threst1 = prctile(acorr, 90);
+    threst2 = prctile(acorr, 10);
     threst = scl * pixs;
 %     thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
-    thres1 = 2 * hist_gauss(acorr, 0.5);
-    thres1 = min(4 * mad(acorr) + median(acorr), thres1);
-    if threst1 > threst
+%     thres1 = 2 * prctile(acorr, 50);
+    thres1 = movement_thres(acorr);
+    thres1 = min(mad(acorr) + median(acorr), thres1);
+    if threst1 < threst || threst2 > threst
         thres = thres1;
     else
-        thres = min(threst, thres1); %%% no more than scl (percentage0) of the image size %%%
+        thres = threst; %%% no more than scl (percentage) of the image size %%%
     end
     scl = thres / pixs; %%% update new scl %%%
     ids = acorr > thres;
-    ids = ~(imdilate(ids, strel('disk', round(Fs / 5)))); %%% small dilation with small threshold: 0.2s each side %%%
+    ids = ~ids; %%% small dilation with small threshold: 0.2s each side %%%
+%     ids = ~(imdilate(ids, strel('disk', round(Fs / 5)))); %%% small dilation with small threshold: 0.2s each side %%%
     [l, n] = bwlabeln(ids);
     stt = zeros(n, 1);
     stp = zeros(n, 1);
     for i = 1: n
-        stt(i) = find(l == i, 1) + 1;
+        stt(i) = find(l == i, 1);
         stp(i) = find(l == i, 1, 'last') + 1;
-    end
-    if any(stt == 2)
-        stt(stt == 2) = 1;
     end
     
     %% adjust long sections for balance %%
-    alen = stp - stt;
+    alen = stp - stt + 1;
     na = length(alen);
     idx = find(alen > na);
     for i = 1: length(idx)
@@ -73,7 +77,7 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     end
     
     %% further adjust sections for memory fitness %%
-    alen = stp - stt;
+    alen = stp - stt + 1;
     nff = max(alen);
     nsize = pixh * pixw * nff * stype; %%% size of single %%%
     nbatch = batch_compute(nsize);

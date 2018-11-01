@@ -27,6 +27,9 @@ function pxluse = vld_prd_slct(data, c, pkc, pxlthres)
             tmp1 = data(1: idpks(j));
             tmp2 = data(idpks(j): end);
             id1 = find(diff(tmp1) < 0, 1, 'last');
+            if isempty(id1)
+                id1 = 1;
+            end
             id2 = find(diff(tmp2) > 0, 1, 'first') + idpks(j) - 1;
             if isempty(id2)
                 id2 = length(data);
@@ -47,21 +50,25 @@ function pxluse = vld_prd_slct(data, c, pkc, pxlthres)
     %%% judge if got enough periods %%%
     if sum(pxluse) < pxlthres
         pkr = setdiff(1: length(pmx), pkmxvld);
-        pmxr = pmx(pkr);
-        idr = id(pkr);
-        [pmxrs, idrst] = sort(pmxr, 'descend');
-        idrs = idr(idrst);
-        k = 1;
-        while sum(pxluse) < pxlthres
-            tmp1 = data(1: idrs(k));
-            tmp2 = data(idrs(k): end);
-            id1 = find(diff(tmp1) < 0, 1, 'last');
-            id2 = find(diff(tmp2) > 0, 1, 'first') + idrs(k) - 1;
-            if isempty(id2)
-                id2 = length(data);
+        if ~isempty(pkr)
+            pmxr = pmx(pkr);
+            idr = id(pkr);
+            [pmxrs, idrst] = sort(pmxr, 'descend');
+            idrs = idr(idrst);
+            k = 1;
+            while sum(pxluse) < pxlthres && k <= length(idrs)
+                tmp1 = data(1: idrs(k));
+                tmp2 = data(idrs(k): end);
+                id1 = find(diff(tmp1) < 0, 1, 'last');
+                id2 = find(diff(tmp2) > 0, 1, 'first') + idrs(k) - 1;
+                if isempty(id2)
+                    id2 = length(data);
+                end
+                pxluse(id1: id2) = true;
+                k = k + 1;
             end
-            pxluse(id1: id2) = true;
-            k = k + 1;
-        end        
+        else
+            
+        end
     end
 end

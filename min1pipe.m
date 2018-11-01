@@ -44,21 +44,21 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
     Params.Fsi = Fsi;                                                   %%%
     Params.Fsi_new = Fsi_new;                                           %%%
     Params.spatialr = spatialr;                                         %%%
-    Params.neuron_size = se; %%% half neuron size; 9 for Inscopix and 5  %%%
+    Params.neuron_size = se; %%% half neuron size; 9 for Inscopix and 5 %%%
                             %%% for UCLA, with 0.5 spatialr separately  %%%
                                                                         %%%
     %%% fixed parameters (change not recommanded) %%%                   %%%
     Params.anidenoise_iter = 4;                   %%% denoise iteration %%%
-    Params.anidenoise_dt = 1/7;                  %%% denoise step size %%%
+    Params.anidenoise_dt = 1/7;                   %%% denoise step size %%%
     Params.anidenoise_kappa = 0.5;       %%% denoise gradient threshold %%%
     Params.anidenoise_opt = 1;                %%% denoise kernel choice %%%
     Params.anidenoise_ispara = 1;             %%% if parallel (denoise) %%%   
     Params.bg_remove_ispara = 1;    %%% if parallel (backgrond removal) %%%
     Params.mc_scl = 0.004;      %%% movement correction threshold scale %%%
-    Params.mc_sigma_x = 3;  %%% movement correction spatial uncertainty %%%
-    Params.mc_sigma_f = 0.5;   %%% movement correction fluid reg weight %%%
-    Params.mc_sigma_d = 10;%%% movement correction diffusion reg weight %%%
-    Params.pix_select_sigthres = 1.5;     %%% seeds select signal level %%%
+    Params.mc_sigma_x = 5;  %%% movement correction spatial uncertainty %%%
+    Params.mc_sigma_f = 10;    %%% movement correction fluid reg weight %%%
+    Params.mc_sigma_d = 1; %%% movement correction diffusion reg weight %%%
+    Params.pix_select_sigthres = 0.8;     %%% seeds select signal level %%%
     Params.pix_select_corrthres = 0.6; %%% merge correlation threshold1 %%%
     Params.refine_roi_ispara = 1;          %%% if parallel (refine roi) %%%
     Params.merge_roi_corrthres = 0.9;  %%% merge correlation threshold2 %%% 
@@ -94,11 +94,12 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
                 pixs = min(pixh, pixw);
                 Params.mc_pixs = pixs;
                 Fsi_new = Params.Fsi_new;
-                scl = Params.neuron_size / (8 * pixs);
+                scl = Params.neuron_size / (7 * pixs);
                 sigma_x = Params.mc_sigma_x;
                 sigma_f = Params.mc_sigma_f;
                 sigma_d = Params.mc_sigma_d;
-                [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+                se = Params.neuron_size;
+                [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
                 Params.mc_scl = scl; %%% update latest scl %%%
             end
             

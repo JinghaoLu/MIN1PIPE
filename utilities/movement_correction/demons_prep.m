@@ -11,7 +11,7 @@ function imout = demons_prep(img, mag, denom)
     ithres = (max(img(:)) + min(img(:))) / denom;
     tmp = sigmf(img, [mag, ithres]);
 %     tmp = sigmf(img, [mag, prctile(img(:), 98)]);
-    tmp = tmp .* (tmp > median(tmp(:)));
+    tmp = tmp .* (tmp >= median(tmp(:)));
     tmp(tmp == 0) = min(tmp(tmp > 0));
     imout = normalize(tmp);
 end

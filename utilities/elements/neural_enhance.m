@@ -40,11 +40,20 @@ function [m_out, imaxf, overwrite_flag] = neural_enhance(m_in, filename, Params)
             %%% get the current batch frames %%%
             tmp = m_in.frame_all(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
             
+            %%% clean dirts %%%
+            disp(['Begin dirts clean #', num2str(i), '/', num2str(nbatch), ' batch'])
+            Ydcln = dirt_clean(tmp, szad, isparaad);
+            Ydcln = Ydcln + tmp;
+            disp(['Done dirts clean #', num2str(i), '/', num2str(nbatch), ' batch'])
+            clear tmp            
+            
             %%% anisotropic diffusion %%%
             disp(['Begin anisotropic diffusion #', num2str(i), '/', num2str(nbatch), ' batch'])
-            Yblur = anidenoise(tmp, szad, isparaad, iter, dt, kappa, opt);
+            Yblur = anidenoise(Ydcln, szad, isparaad, iter, dt, kappa, opt);
+%             Yblur = anidenoise(tmp, szad, isparaad, iter, dt, kappa, opt);
             disp(['Done anisotropic diffusion #', num2str(i), '/', num2str(nbatch), ' batch'])
-            clear tmp
+            clear Ydcln
+%             clear tmp
             
             %%% background removal %%%
             disp(['Begin background removal #', num2str(i), '/', num2str(nbatch), ' batch'])

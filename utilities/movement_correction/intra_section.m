@@ -33,7 +33,7 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
 
     %%% if real selection, jump the logdemons part %%%
     if flag
-        sclld = 1;
+        sclld = scl;
     else
         sclld = scl;
     end
@@ -52,7 +52,7 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
     i = 1;
     idbatch = zeros(1, nbatch);
     while dfc(end) > 0
-        idtmp = find(dfc < ebatch, 1, 'last');
+        idtmp = find(dfc <= ebatch, 1, 'last');
         idbatch(i) = idtmp;
         dfc = dfc - dfc(idtmp);
         i = i + 1;

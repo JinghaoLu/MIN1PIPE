@@ -2,12 +2,16 @@ function mxpsig = feature2_comp(mxall, flag, mag, denom, sz)
 % compute 2nd features of the images
 %   Jinghao Lu, 01/26/2018
 
+    if nargin < 2 || isempty(flag)
+        flag = 0;
+    end
+    
     if nargin < 3 || isempty(mag)
-        mag = 20;
+        mag = 40;
     end
     
     if nargin < 4 || isempty(denom)
-        denom = 5;
+        denom = 10;
     end
     
     if nargin < 5 || isempty(sz)

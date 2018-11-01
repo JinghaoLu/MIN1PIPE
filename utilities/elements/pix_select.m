@@ -78,11 +78,15 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     end
     
     proj1 = (sum(mxmx, 3) > 0) | (imregionalmax(imgaussfilt(maxall, 1)));
+    maskc = normalize(imgaussfilt(feature2_comp(maxall, 0, 100, 5), 100 * size(maxall) / max(size(maxall)))) > 0.3;
+    if sum(maskc(:)) == 0
+        maskc = true(size(maxall));
+    end
     disp('Done randomized seeds init')
     toc(hpix)
     
     %% coarse seeds refinement: GMM %%
-    mx = proj1 .* mask;
+    mx = proj1 .* mask .* maskc;
     mxs = find(reshape(mx, pixh * pixw, 1));
     datause = zeros(length(mxs), nf);
     stype = parse_type(class(m.reg(1, 1, 1)));
@@ -112,26 +116,35 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     disp(['Done coarse selection, ', num2str(time), ' seconds'])
     
     %% signal level %%
-    %%% signal level fiter (compared to noise) %%%
-    ffts = fft(datause2, [], 2);
-    nft = size(ffts, 2);
-    nf4 = round(nft / 4);
-    rgs = [floor(nft / 2 + 1) - nf4, ceil(nft / 2 + 1) + nf4];
-    ffts(:, [1: rgs(1), rgs(2): end]) = 0;
-    datt = ifft(ffts, [], 2);
-    rgnoise = max(datt(:, 2: end - 1), [], 2) - min(datt(:, 2: end - 1), [], 2);
-    rgsig = max(datause2, [], 2) - min(datause2, [], 2);
-    idm = rgsig ./ rgnoise > sigthres;
-    datause2 = datause2(idm, :);
-    mxuse = mxuse(idm);
+%     %%% signal level fiter (compared to noise) %%%
+%     ffts = fft(datause2, [], 2);
+%     nft = size(ffts, 2);
+%     nf4 = round(nft / 4);
+%     rgs = [floor(nft / 2 + 1) - nf4, ceil(nft / 2 + 1) + nf4];
+%     ffts(:, [1: rgs(1), rgs(2): end]) = 0;
+%     datt = ifft(ffts, [], 2);
+%     rgnoise = max(datt(:, 2: end - 1), [], 2) - min(datt(:, 2: end - 1), [], 2);
+%     rgsig = max(datause2, [], 2) - min(datause2, [], 2);
+%     idm = rgsig ./ rgnoise > sigthres;
+%     datause2 = datause2(idm, :);
+%     mxuse = mxuse(idm);
     
     %%% max intensity filter %%%
     imgmax = maxall;
-    nbins = round(pixh * pixw / 10);
-    [tmp1, ctrs] = hist(imgmax(:), nbins);
-    [~, idm] = max(tmp1);
-    idthres = 2 * idm;
-    ithres = ctrs(idthres);
+    imgmax = imgmax(imgmax > 0);
+    tmp1 = sort(imgmax);
+    tmp2 = linspace(tmp1(1), 4 * tmp1(end), length(tmp1));
+    tmp = tmp1(:) - tmp2(:);
+    [~, idthres] = min(tmp);
+    ithres = tmp1(idthres);
+
+    imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
+    imgmaxt = imgmax(imgmax > 0);
+    tmp1 = sort(imgmaxt);
+    tmp2 = linspace(tmp1(1), 4 * tmp1(end), length(tmp1));
+    tmp = tmp1(:) - tmp2(:);
+    [~, idthres] = min(tmp);
+    ithres = tmp1(idthres);
     [~, idm, ~] = intersect(mxuse, find(imgmax(:) > ithres));
     datuse = datause2(idm, :);
     iduse = mxuse(idm);
@@ -164,9 +177,19 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     cutoff = cutoff(ksscr);
     pkcutoff = pkcutoff(ksscr);
     iduse = iduse(ksscr);
-    time = toc(hpix);
-    disp(['Done refinement, ', num2str(time), ' seconds'])
 
+    %% seeds refinement: exclude non calcium property %%
+    %%% skewness %%%
+    skw = skewness(datuse');
+    idd = find(skw > 0);
+    datuse = datuse(idd, :);
+    datasmth = datasmth(idd, :);
+    cutoff = cutoff(idd);
+    pkcutoff = pkcutoff(idd);
+    iduse = iduse(idd);            
+    time = toc(hpix);
+    disp(['Done refinement, ', num2str(time), ' seconds'])    
+    
     %% seeds correlating %%   
     [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(maxall, iduse, datuse, datasmth, cutoff, pkcutoff, sz, corrthres);
         

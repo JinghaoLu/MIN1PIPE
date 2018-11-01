@@ -40,7 +40,7 @@ function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_c
     flagincrease = false;
     istep = 0.001;
     
-    if nf > 1 && scl <= 0.004
+    if nf > 1 && scl < 1
         %% main loop when there are still possibility of combination %%
         while 1
             

@@ -37,7 +37,7 @@ function [Mp, sx, sy] = logdemons(F, M, isgpu, nlevel, sigma_x, sigma_fluid, sig
         sigma_diffusion = defpar.mc_sigma_d;
     end
     
-    niter = 250;
+    niter = 5;
     sigma_i = 1; % weight on similarity term
     do_display = 0;   % display iterations
 
@@ -105,7 +105,7 @@ function [Mp, sx, sy, vx, vy] = register(F, M, opt, isgpu)
         opt.sigma_x = 1.0;
     end
     if ~isfield(opt, 'niter')
-        opt.niter = 250;
+        opt.niter = 5;
     end
     if ~isfield(opt, 'stop_criterium')
         opt.stop_criterium = 0.01;

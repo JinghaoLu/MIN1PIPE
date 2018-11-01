@@ -10,10 +10,27 @@ function [PN, imgo, scr] = lk_ref_track(Y, imref)
     imgo = Y;
     for i = 1: n
         imcur = Y(:, :, i);
+        scr(i) = get_trans_score_ref(imcur, imref);
         [p0, winsize] = cen_gen(cat(3, imref, imcur));
         [temp, isf(i), ~] = lk2_track(imref, imcur, p0, winsize);
         PN(:, i) = temp - p0;
-        imgo(:, :, i) = lk2_warp(imcur, temp, p0);
-        scr(i) = get_trans_score_ref(imcur, imref);
+        if ~isf(i)
+            imreft = feature2_comp(imref);
+            imcurt = feature2_comp(imcur);
+            [p0, winsize] = cen_gen(cat(3, imreft, imcurt));
+            [temp, isf(i), ~] = lk2_track(imreft, imcurt, p0, winsize);
+            PN(:, i) = temp - p0;
+            if ~isf(i)
+                [temp, ~] = imregdft(imref, imcur);
+                PN(:, i) = temp;
+            end
+        end
+        p0 = [0; 0];
+        imgo(:, :, i) = lk2_warp(imcur, PN(:, i), p0);
+        
+        if sqrt(PN(1, i) ^ 2 + PN(2, i) ^ 2) > 4 * scr(i)
+            PN(:, i) = p0;
+            imgo = imcur;
+        end
     end
 end
