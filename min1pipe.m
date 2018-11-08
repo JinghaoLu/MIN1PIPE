@@ -178,14 +178,16 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             end
             
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
+            time2 = toc(hpipe);
+            disp(['Done all, total time: ', num2str(time1 + time2), ' seconds'])
         else
             filename_raw = [path_name, file_base{i}, '_frame_all.mat'];
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
             file_name_to_save = filecur;
+            
+            time2 = toc(hpipe);
+            disp(['Done all, total time: ', num2str(time2), ' seconds'])
         end
-        
-        time2 = toc(hpipe);
-        disp(['Done all, total time: ', num2str(time1 + time2), ' seconds'])
     end
 end
 
