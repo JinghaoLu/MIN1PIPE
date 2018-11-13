@@ -101,6 +101,12 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
                 se = Params.neuron_size;
                 [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
                 Params.mc_scl = scl; %%% update latest scl %%%
+                
+                file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
+                if exist(file_name_to_save, 'file')
+                    delete(file_name_to_save)
+                end
+                save(file_name_to_save, 'corr_score', 'raw_score', '-v7.3');
             end
             
             time1 = toc(hpipe);
@@ -168,6 +174,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             
             file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
             if exist(file_name_to_save, 'file')
+                if ismc
+                    load(file_name_to_save, 'raw_score', 'corr_score')
+                end
                 delete(file_name_to_save)
             end
             
