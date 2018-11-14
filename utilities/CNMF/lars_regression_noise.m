@@ -80,7 +80,7 @@ while 1
         [lambda, new] = max(dQa(:));
     
         if lambda < 0
-            disp('All negative directions!')
+%             disp('All negative directions!')
             break
         end
         
