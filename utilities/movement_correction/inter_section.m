@@ -159,21 +159,21 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
         end
         
         %%%% warp main %%%%
-        parfor ip = 1: (idbatch(i + 1) - idbatch(i))
+        stof = idbatch(i);
+        parfor ip = 1: length(Yuse)
             regt = Yuse{ip};
-            if ~isempty(xfall{ip})
-                for j = 1: length(xfall{ip})
+            if ~isempty(xfall{ip + stof})
+                for j = 1: length(xfall{ip + stof})
                     for k = 1: size(regt, 3)
-                        regt(:, :, k) = lk2_warp(regt(:, :, k), xfall{ip}{j}, p0);
-                        for ii = 1: length(sxall{ip}{j})
-                            regt(:, :, k) = iminterpolate(regt(:, :, k), sxall{ip}{j}{ii}, syall{ip}{j}{ii});
+                        regt(:, :, k) = lk2_warp(regt(:, :, k), xfall{ip + stof}{j}, p0);
+                        for ii = 1: length(sxall{ip + stof}{j})
+                            regt(:, :, k) = iminterpolate(regt(:, :, k), sxall{ip + stof}{j}{ii}, syall{ip + stof}{j}{ii});
                             regt(:, :, k) = regt(:, :, k) - imopen(regt(:, :, k), strel('disk', se));
                         end
                     end
                 end
             end
             Yuse{ip} = regt;
-%             disp(num2str(ip))
         end
         
         %%%% data update %%%%

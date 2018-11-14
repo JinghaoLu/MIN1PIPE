@@ -124,10 +124,10 @@ function m = nonstable_section(m, sttn, stpn, se, pixs, scl, sigma_x, sigma_f, s
             
             %%%% stats display %%%%
             if length(bstt) < 10
-                disp(['Done nonstable-LogDemons section # ', num2str(ii), '/', num2str(length(bstt))])
+                disp(['Done nonstable-LogDemons section # ', num2str(ii + stof), '/', num2str(length(bstt))])
             else
                 if mod(ii, round(length(bstt) / 10)) == 0
-                    disp(['Done nonstable-LogDemons section # ', num2str(ii), '/', num2str(length(bstt))])
+                    disp(['Done nonstable-LogDemons section # ', num2str(ii + stof), '/', num2str(length(bstt))])
                 end
             end
 %             disp(['Done nonstable-LogDemons section # ', num2str(ii), '/', num2str(length(bstt))])

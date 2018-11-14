@@ -68,6 +68,7 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
         end
         
         %%% find a best registration for frames within each stable section %%%
+        stof = idbatch(i);
         parfor ii = 1: length(regtpara)
             regtcur = double(regtpara{ii});
             ncur = size(regtcur, 3);
@@ -76,10 +77,10 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
             regtcur = reshape(cell2mat(regtcur(:)'), pixh, pixw, ncur);
             regtpara{ii} = regtcur;
             if length(stt) < 10
-                disp(['Done intra_section # ', num2str(ii), '/', num2str(length(stt)), ', batch ', num2str(i), '/', num2str(nbatch)])
+                disp(['Done intra_section # ', num2str(ii + stof), '/', num2str(length(stt)), ', batch ', num2str(i), '/', num2str(nbatch)])
             else
                 if mod(ii, round(length(stt) / 10)) == 0
-                    disp(['Done intra_section # ', num2str(ii), '/', num2str(length(stt)) ', batch ', num2str(i), '/', num2str(nbatch)])
+                    disp(['Done intra_section # ', num2str(ii + stof), '/', num2str(length(stt)) ', batch ', num2str(i), '/', num2str(nbatch)])
                 end
             end
         end

@@ -16,7 +16,7 @@ end
 
 function mem = unix_mem()
     [~, out] = system('vmstat -s -S M | grep "free memory"');
-    mem = sscanf(out,'%f  free memory');
+    mem = sscanf(out, '%f  free memory');
     mem = mem * 1024 ^ 2;
 end
 
