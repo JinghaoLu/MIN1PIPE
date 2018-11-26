@@ -90,5 +90,19 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
         stp = [stp; round(tmp(2: end - 1)) - 1];
     end
     stt = sort(stt);
-    stp = sort(stp);    
+    stp = sort(stp);   
+    
+    %% final adjust sections for restricted length %%
+    alen = stp - stt + 1;
+    sstep = 5;
+    for i = 1: length(alen)
+        if alen(i) > sstep
+            nc = ceil(alen(i) / sstep);
+            sc = round(linspace(stp(i), stt(i + 1), nc + 1));
+            stt = [stt; sc(2: end - 1)' + 1];
+            stp = [stp; sc(2: end - 1)'];
+        end
+    end
+    stt = sort(stt);
+    stp = sort(stp);   
 end
