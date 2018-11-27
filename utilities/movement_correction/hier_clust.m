@@ -98,7 +98,7 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     for i = 1: length(alen)
         if alen(i) > sstep
             nc = ceil(alen(i) / sstep);
-            sc = round(linspace(stp(i), stt(i + 1), nc + 1));
+            sc = round(linspace(stt(i), stp(i), nc + 1));
             stt = [stt; sc(2: end - 1)' + 1];
             stp = [stp; sc(2: end - 1)'];
         end
