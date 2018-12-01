@@ -94,7 +94,7 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     
     %% final adjust sections for restricted length %%
     alen = stp - stt + 1;
-    sstep = 5;
+    sstep = 10;
     for i = 1: length(alen)
         if alen(i) > sstep
             nc = ceil(alen(i) / sstep);

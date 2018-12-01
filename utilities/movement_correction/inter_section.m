@@ -43,8 +43,9 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
     istep = 5;
     nl = ceil(nnt / istep);
     regallt = zeros(pixh, pixw, nnt);
-    for i = 1: nnt
-        tmp = m.reg(1: pixh, 1: pixw, sttnn(i): stpnn(i));
+    parfor i = 1: nnt
+        mm = m;
+        tmp = mm.reg(1: pixh, 1: pixw, sttnn(i): stpnn(i));
         regallt(:, :, i) = ref_select(tmp);
     end
     
@@ -53,6 +54,8 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
         idt = istep * (i - 1) + 1: min(nnt, istep * i);
         regpara{i} = regallt(:, :, idt);
     end
+    
+    disp('Done data prep')
     
     %%% initialization %%%
     ub = 0;
@@ -108,6 +111,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
             end
         end
         regpara = regparat;
+        disp(['Done loop #', num2str(ii), '/', num2str(ub)])
     end
     
     %%% register preparation %%%

@@ -3,12 +3,18 @@ function [ref, nfref] = ref_select(Y, nfcomp)
 %   Jinghao Lu, 05/11/2017
 
     %%% find all high intensity "seeds" pixels %%%
-    [pixh, pixw, nf] = size(Y);    
+    [pixh, pixw, nf] = size(Y);  
+    ns = 10;
     basecur = max(Y, [], 3);
     rmax = imregionalmax(basecur);
     ithres = prctile(basecur(:), 98);
-    tmp = reshape(bsxfun(@times, Y, rmax & basecur > ithres), pixh * pixw, nf);
-    tmp = tmp(tmp(:, 1) > 0, :);
+    tmp1 = rmax & (basecur > ithres);
+    inds = tmp1(:);
+    intens = basecur(inds);
+    [~, ids] = sort(intens, 'descend');
+    tmp = reshape(bsxfun(@times, Y, rmax & (basecur > ithres)), pixh * pixw, nf);
+    tmp2 = tmp(inds, :);
+    tmp = tmp2(ids(1: min(ns, size(tmp2, 1))), :);
     
     %%% frame number threshold for individual "seeds" %%%
     if nargin < 2
