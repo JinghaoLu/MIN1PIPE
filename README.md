@@ -2,7 +2,7 @@
   <img src="./demo/MIN1PIPE_Slider.jpg" alt="slider" width="800px"/>
 </p>
 
-# MIN1PIPE
+# MIN1PIPE (reads "minipipe")
 [A **MIN**iscope **1**-photon-based Calcium Imaging Signal Extraction **PIPE**line](https://www.biorxiv.org/content/early/2018/04/30/311548). 
 
 MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range problems in 1-photon calcium imaging in one package: *`data enhancement`* &rarr; *`movement morrection`* &rarr; *`signal extraction`*. It requires minimal parameter-tuning and integrates the semi-auto options. Each inidividual module can also be easily adapted for the 2-photon imaging setting.
