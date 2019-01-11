@@ -73,6 +73,10 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             info = imfinfo([path_name, dirs{1}]);
             dtype = ['uint', num2str(info(1).BitDepth)];
         end
+        vfmt = info.VideoFormat;
+        if strcmp(vfmt, 'RGB24')
+            dtype = 'uint8';
+        end
         pixwo = info(1,1).Width;
         pixho = info(1,1).Height;
         pixw = round(pixwo * ratio);
@@ -158,12 +162,16 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                             stt = stto;
                         else
                             fid = fopen([path_name, dir_use{ib}{i}], 'r');
-                            headert = fread(fid, 5000, [dtype, '=>', dtype]);
+                            headert = fread(fid, 10000, [dtype, '=>', dtype]);
                             headert = headert(:)';
-                            h1 = strfind(headert, 'movi');
-                            dlen = headert(h1 + 8: h1 + 11);
+%                             h1 = strfind(headert, 'movi');
+%                             dlen = headert(h1 + 8: h1 + 11);
+%                             ndframe = typecast(dlen, 'uint32');
+%                             stt1 = h1 + 11;
+                            h1 = strfind(headert, '00db');
+                            dlen = headert(h1 + 4: h1 + 7);
                             ndframe = typecast(dlen, 'uint32');
-                            stt1 = h1 + 11;
+                            stt1 = h1 + 7;
                             idt = find(strcmp(dir_uset, dir_use{ib}{i}));
                             stt = zeros(nft(idt), 1);
                             for ii = 1: nft(idt)
