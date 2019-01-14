@@ -1,4 +1,4 @@
-function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag)
+function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, path_name, file_name)
 % main_processing
 %   need to decide whether to use parallel computing
 %   Fsi: raw sampling rate
@@ -38,6 +38,10 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
         flag = 1;
     end
     
+    if nargin < 7 || isempty(flag)
+        [file_name, path_name] = uigetfile('*', 'Select coordinates file', 'MultiSelect', 'on');
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%% parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% user defined parameters %%%                                     %%%
@@ -65,7 +69,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %% get dataset info %%
-    [path_name, file_base, file_fmt] = data_info;
+    [path_name, file_base, file_fmt] = data_info(file_name, path_name);
     
     hpipe = tic;
     for i = 1: length(file_base)

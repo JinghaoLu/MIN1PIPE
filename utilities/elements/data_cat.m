@@ -69,13 +69,13 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
         if contains(file_fmt, 'avi')
             info = VideoReader([path_name, dirs{1}]);
             dtype = ['uint', num2str(info.BitsPerPixel)];
+            vfmt = info.VideoFormat;
+            if strcmp(vfmt, 'RGB24')
+                dtype = 'uint8';
+            end
         else
             info = imfinfo([path_name, dirs{1}]);
             dtype = ['uint', num2str(info(1).BitDepth)];
-        end
-        vfmt = info.VideoFormat;
-        if strcmp(vfmt, 'RGB24')
-            dtype = 'uint8';
         end
         pixwo = info(1,1).Width;
         pixho = info(1,1).Height;
