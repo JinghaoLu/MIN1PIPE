@@ -1,6 +1,6 @@
 %%% demo of the full MIN1PIPE %%%
 
-addpath(genpath('YOURPATH/MIN1PIPE')) % add MIN1PIPE repo to matlab path
+addpath(genpath('YOURPATH/MIN1PIPE')) % add MIN1PIPE repo to matlab path, this will prevent the proper installation of cvx toolbox in a fresh machine.
 
 %% session-specific parameter initialization %% 
 Fsi = 20;
@@ -16,7 +16,7 @@ file_name = 'demo_data.tif';
 
 
 %% main program %%
-[fname, frawname, fregname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag, path_name, file_name);
+[fname, frawname, fregname] = min1pipe_HPC(Fsi, Fsi_new, spatialr, se, ismc, flag, path_name, file_name);
 
 %% plot some images %%
 load(fname)
