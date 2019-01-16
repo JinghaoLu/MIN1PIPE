@@ -55,6 +55,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
         regpara{i} = regallt(:, :, idt);
     end
     
+    clear regallt
     disp('Done data prep')
     
     %%% initialization %%%
@@ -139,7 +140,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
     nff = dfc(end);
     ttype = class(m.reg(1, 1, 1));
     stype = parse_type(ttype);
-    nsize = pixh * pixw * nff * stype * 4; %%% heuristic size of algorithm %%%
+    nsize = pixh * pixw * nff * stype * 8; %%% heuristic size of algorithm %%%
     nbatch = batch_compute(nsize);
     ebatch = round(nff / nbatch);
     
