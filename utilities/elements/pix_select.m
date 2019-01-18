@@ -79,8 +79,8 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     
     proj1 = (sum(mxmx, 3) > 0) | (imregionalmax(imgaussfilt(maxall, 1)));
     knl = fspecial('gaussian', [pixh, pixw], min(pixh, pixw) / 4);
-    maxallc = maxall .* knl;
-    maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.3;
+    maxallc = normalize(maxall .* knl);
+    maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.4;
     if sum(maskc(:)) == 0
         maskc = true(size(maxall));
     end
