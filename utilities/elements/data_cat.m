@@ -183,7 +183,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                         
                         %%% create frames %%%
                         for ii = rg(rgcount): rg(rgcount + 1) - 1
-                            frame = reshape(d_raw(stt(f_idx(ii)) + 1: stt(f_idx(ii)) + ndframe), pixwo, pixho)';
+                            frame = flipud(reshape(d_raw(stt(f_idx(ii)) + 1: stt(f_idx(ii)) + ndframe), pixwo, pixho)');
                             frame_all(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
                             if mod(ii, 100) == 0
                                 disp(num2str(ii))
