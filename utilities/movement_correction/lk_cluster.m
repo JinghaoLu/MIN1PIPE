@@ -1,4 +1,4 @@
-function [mxout, xfuse, iduse, smatrix, xfmatrix] = lk_cluster(mxin, pixs, scl)
+function [mxout, xfuse, iduse, smatrix, xfmatrix] = lk_cluster(mxin, pixs, scl, maskc)
 % Full cluster Hierarchical LK method
 %   Jinghao Lu, 02/02/2018
     
@@ -10,6 +10,10 @@ function [mxout, xfuse, iduse, smatrix, xfmatrix] = lk_cluster(mxin, pixs, scl)
     if nargin < 3 || isempty(scl)
         defpar = default_parameters;
         scl = defpar.mc_scl;
+    end
+    
+    if nargin < 4 || isempty(maskc)
+        maskc = true(size(mxin, 1), size(mxin, 2));
     end
     
     %% initialization %%
@@ -40,8 +44,8 @@ function [mxout, xfuse, iduse, smatrix, xfmatrix] = lk_cluster(mxin, pixs, scl)
                 xftemp = cell(1, ncur);
                 imgtemp = cell(1, ncur);
                 
-                [PNt, imgt, scrto] = lk_ref_track(mxint2, imref);
-                scrtc = get_trans_score_ref(mxint2, imref);
+                [PNt, imgt, scrto] = lk_ref_track(mxint2, imref, maskc);
+                scrtc = get_trans_score_ref(mxint2, imref, maskc);
                 ids = scrto < scrtc;
                 PNt(:, ids) = 0;
                 imgt(:, :, ids) = mxint2(:, :, ids);

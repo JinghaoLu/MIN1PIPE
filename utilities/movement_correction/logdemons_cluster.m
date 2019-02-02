@@ -1,4 +1,4 @@
-function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_cluster(mxin, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_cluster(mxin, pixs, scl, sigma_x, sigma_f, sigma_d, maskc)
 % full graph applying logdemons registration
 %   Jinghao Lu, 06/11/2017
 
@@ -25,6 +25,10 @@ function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_c
     if nargin < 6 || isempty(sigma_d)
         defpar = default_parameters;
         sigma_d = defpar.mc_sigma_d;
+    end
+    
+    if nargin < 7 || isempty(maskc)
+        maskc = true(size(mxin, 1), size(mxin, 2));
     end
     
     %% initialization %%
@@ -66,16 +70,16 @@ function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_c
                     imgtemp = cell(1, ncur);
                     for j = 1: ncur
                         imcur = mxint2{i}(:, :, j);
-                        [scrtc, imgt, xft] = klt_ref_track(imcur, imref);
-                        scrto = get_trans_score_ref(imcur, imref);
+                        [scrtc, imgt, xft] = klt_ref_track(imcur, imref, [], maskc);
+                        scrto = get_trans_score_ref(imcur, imref, maskc);
                         if scrtc < scrto
                             imcur = imgt;
                             xftemp{j} = xft{1};
                         else
                             xftemp{j} = affine2d(diag(ones(1, 3)));
                         end
-                        [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d);
-                        temp(j) = get_trans_score_ref(imgo, imref);
+                        [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
+                        temp(j) = get_trans_score_ref(imgo, imref, maskc);
                         ldtemp{j} = cellfun(@(x, y) cat(3, x, y), sx, sy, 'uniformoutput', false);
                         imgtemp{j} = imgo;
                     end
@@ -216,8 +220,8 @@ function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_c
                     mxint2 = mxint1;
                     parfor i = 1: n
                         imref = mxint1(:, :, i);
-                        [scrtc, imgt, xft] = klt_ref_track(mxint2, imref, nmaxloop);
-                        scrto = get_trans_score_ref(mxint2, imref);
+                        [scrtc, imgt, xft] = klt_ref_track(mxint2, imref, nmaxloop, maskc);
+                        scrto = get_trans_score_ref(mxint2, imref, maskc);
                         mxtmp = mxint2;
                         xftmp = cell(1, n);
                         for j = 1: n
@@ -234,8 +238,8 @@ function [mxout, xfuse, lduse, iduse, smatrix, xfmatrix, ldmatrix] = logdemons_c
                         ldtmp = cell(1, n);
                         for j = 1: n
                             imcur = mxtmp(:, :, j);
-                            [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d);
-                            stmp(j) = get_trans_score_ref(imgo, imref);
+                            [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
+                            stmp(j) = get_trans_score_ref(imgo, imref, maskc);
                             ldtmp{j} = cellfun(@(x, y) cat(3, x, y), sx, sy, 'uniformoutput', false);
                         end
                         smatrix(i, :) = stmp;

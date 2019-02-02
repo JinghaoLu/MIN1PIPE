@@ -1,4 +1,4 @@
-function [img, xform] = klt2_reg(imref, imcur, flag)
+function [img, xform] = klt2_reg(imref, imcur, flag, maskc)
 % track and register 2 images with KLT tracker
 %   Jinghao Lu, 11/15/2017
 
@@ -6,7 +6,11 @@ function [img, xform] = klt2_reg(imref, imcur, flag)
         flag = 1;
     end
     
-    [~, pcur, pold, ~] = klt2(imref, imcur);
+    if nargin < 4 || isempty(maskc)
+        maskc = true(size(imref));
+    end
+    
+    [~, pcur, pold, ~] = klt2(imref, imcur, [], [], [], [], maskc);
     [~, ~, xform] = klt_geo(pold, pcur, [], flag); %%% 1: regular RANSAC trans; else: fitgeotrans %%%
     if ~isempty(xform)
         img = klt_warp(imcur, xform);

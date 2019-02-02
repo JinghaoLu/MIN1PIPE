@@ -1,4 +1,4 @@
-function [mxfn, xff, ldf, idf] = lk_ld_hier(mxall, mxalla, pixs, scl, sigma_x, sigma_f, sigma_d, sclld)
+function [mxfn, xff, ldf, idf] = lk_ld_hier(mxall, mxalla, pixs, scl, sigma_x, sigma_f, sigma_d, sclld, maskc)
 % LK-LogDemons hierarchical registration
 %   Jinghao Lu, 02/27/2018
 
@@ -35,15 +35,19 @@ function [mxfn, xff, ldf, idf] = lk_ld_hier(mxall, mxalla, pixs, scl, sigma_x, s
         sclld = scl;
     end
     
+    if nargin < 9 || isempty(maskc)
+        maskc = true(size(mxall, 1), size(mxall, 2));
+    end
+    
     [pixh, pixw, ~] = size(mxall);
     
     %% LK first feedforward then full cluster %%
 
     %%% LK feedforward %%%
-    [mxlkloop, xflkloop, idlkloop] = lk_loop(mxalla, pixs, scl);
+    [mxlkloop, xflkloop, idlkloop] = lk_loop(mxalla, pixs, scl, maskc);
     
     %%% LK full cluster %%%
-    [mxlkclust, xflkclust, idlkclust] = lk_cluster(mxlkloop, pixs, scl);
+    [mxlkclust, xflkclust, idlkclust] = lk_cluster(mxlkloop, pixs, scl, maskc);
     
     %%% combine the two LK layers %%%
     xflkcomb = [{xflkloop}, {xflkclust}];
@@ -79,10 +83,10 @@ function [mxfn, xff, ldf, idf] = lk_ld_hier(mxall, mxalla, pixs, scl, sigma_x, s
     %% LogDemons first feedforward then full cluster %%
     
     %%% LogDemons feedforward %%%
-    [mxout, xfuse, lduse, iduse] = logdemons_loop(mxfn1, pixs, scl, sigma_x, sigma_f, sigma_d);
+    [mxout, xfuse, lduse, iduse] = logdemons_loop(mxfn1, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
     
     %%% LogDemons full cluster %%%
-    [mxoutt, xfuset, lduset, iduset] = logdemons_cluster(mxout, pixs, sclld, sigma_x, sigma_f, sigma_d);
+    [mxoutt, xfuset, lduset, iduset] = logdemons_cluster(mxout, pixs, sclld, sigma_x, sigma_f, sigma_d, maskc);
     
     %%% combine the two LogDemons layers %%%
     xfcomb = [{xfuse}, {xfuset}];

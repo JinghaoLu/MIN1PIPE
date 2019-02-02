@@ -1,4 +1,4 @@
-function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
+function [stt, stp, flag, scl, mc_flag] = hier_clust(acorr, Fs, pixs, scl, stype, m)
 % find boundaries of stable/nonstable sections
 %   Jinghao Lu, 05/15/2017
 
@@ -15,19 +15,25 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
     end
     
     %% divide into sections %%
+    mc_flag = true;
     flag = 1;
 %     threst1 = hist_gauss(acorr, 0.1);
 %     threst = scl * pixs;
 % %     thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
 %     thres1 = 2 * hist_gauss(acorr, 0.5);
-    threst1 = prctile(acorr, 90);
-    threst2 = prctile(acorr, 10);
+    threst1 = prctile(acorr, 99);
+    threst2 = prctile(acorr, 1);
     threst = scl * pixs;
 %     thres1 = 2 * hist_gauss(acorr, 0.5) - hist_gauss(acorr, 0.99);
 %     thres1 = 2 * prctile(acorr, 50);
     thres1 = movement_thres(acorr);
     thres1 = min(mad(acorr) + median(acorr), thres1);
-    if threst1 < threst || threst2 > threst
+%     if threst1 < threst || threst2 > threst
+%         thres = thres1;
+%     else
+%         thres = threst; %%% no more than scl (percentage) of the image size %%%
+%     end
+    if threst1 > threst
         thres = thres1;
     else
         thres = threst; %%% no more than scl (percentage) of the image size %%%
@@ -44,20 +50,24 @@ function [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m)
         stp(i) = find(l == i, 1, 'last') + 1;
     end
     
-    %% adjust long sections for balance %%
-    alen = stp - stt + 1;
-    na = length(alen);
-    idx = find(alen > na);
-    for i = 1: length(idx)
-        nt = ceil(alen(idx(i)) / na);
-        nstp = alen(idx(i)) / nt;
-        tmp = stt(idx(i)): nstp: stp(idx(i));
-        tmp = tmp(:);
-        stt = [stt; round(tmp(2: end - 1))];
-        stp = [stp; round(tmp(2: end - 1)) - 1];
+    if length(stt) == 1
+        mc_flag = false;
     end
-    stt = sort(stt);
-    stp = sort(stp);
+    
+%     %% adjust long sections for balance %%
+%     alen = stp - stt + 1;
+%     na = length(alen);
+%     idx = find(alen > na);
+%     for i = 1: length(idx)
+%         nt = ceil(alen(idx(i)) / na);
+%         nstp = alen(idx(i)) / nt;
+%         tmp = stt(idx(i)): nstp: stp(idx(i));
+%         tmp = tmp(:);
+%         stt = [stt; round(tmp(2: end - 1))];
+%         stp = [stp; round(tmp(2: end - 1)) - 1];
+%     end
+%     stt = sort(stt);
+%     stp = sort(stp);
     
     %% generate fake sections %%
     if isempty(stt)

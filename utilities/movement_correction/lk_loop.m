@@ -1,4 +1,4 @@
-function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
+function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl, maskc)
 % Hierarchical LK method of the given image cluster
 %   Jinghao Lu, 02/02/2018
 
@@ -10,6 +10,10 @@ function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
     if nargin < 3 || isempty(scl)
         defpar = default_parameters;
         scl = defpar.mc_scl;
+    end
+    
+    if nargin < 4 || isempty(maskc)
+        maskc = true(size(mxin, 1), size(mxin, 2));
     end
     
     %% LK track and combine loop %%
@@ -43,16 +47,16 @@ function [mxout, xfuse, iduse] = lk_loop(mxin, pixs, scl)
                     imcur = mxint3(:, :, ii + 1);
                     
                     %%%% track current two neighboring "frames" %%%%
-                    [PNt, imgt, scrto] = lk_ref_track(imcur, imref);
-                    scrtc = get_trans_score_ref(imgt, imref);
+                    [PNt, imgt, scrto] = lk_ref_track(imcur, imref, maskc);
+                    scrtc = get_trans_score_ref(imgt, imref, maskc);
                     
                     %%%% track real neighboring frames %%%%
                     if countfn > 1
                         [imreft, imcurt] = find_frame(mxintt, idclustfn, ii);
                         
                         %%%%% the other track %%%%%
-                        [PNt1, imgt1, scrto1] = lk_ref_track(imcurt, imreft);
-                        scrtc1 = get_trans_score_ref(imgt1, imreft);
+                        [PNt1, imgt1, scrto1] = lk_ref_track(imcurt, imreft, maskc);
+                        scrtc1 = get_trans_score_ref(imgt1, imreft, maskc);
                         
                         %%%%% get smallest score %%%%%
                         if scrto1 < scrto

@@ -1,4 +1,4 @@
-function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, sigma_f, sigma_d, flag) 
+function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, sigma_f, sigma_d, flag, maskc) 
 % LK logdemons registration unit
 %   Jinghao Lu, 10/20/2018
 
@@ -38,6 +38,10 @@ function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, s
         flag = false;
     end
     
+    if nargin < 9 || isempty(maskc)
+        maskc = true(pixh, pixw);
+    end
+    
     xff = cell(1, nn);
     sxx = cell(1, nn);
     syy = cell(1, nn);
@@ -53,8 +57,8 @@ function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, s
     for j = 1: nn - 1
         imref = tmp(:, :, j);
         imcur = tmp(:, :, j + 1);
-        [PNt, imgt, sco] = lk_ref_track(imcur, imref);
-        scc = get_trans_score_ref(imgt, imref);
+        [PNt, imgt, sco] = lk_ref_track(imcur, imref, maskc);
+        scc = get_trans_score_ref(imgt, imref, maskc);
         if scc < sco
             PN = PNt;
         else
@@ -86,7 +90,7 @@ function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, s
         imref = max(tmpp(:, :, 1: j), [], 3);
         imcur = tmpp(:, :, j + 1);
         
-        [img, sxt, syt] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_f);
+        [img, sxt, syt] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_f, maskc);
         if isempty(sxt)
             sxt = {zeros(pixh, pixw)};
             syt = {zeros(pixh, pixw)};
@@ -112,7 +116,7 @@ function [tmp, xff, sxx, syy] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, s
     for j = 1: nn
         imcur = tmp(:, :, j);
         
-        [img, sxt, syt] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d);
+        [img, sxt, syt] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
         if isempty(sxt)
             sxt = {zeros(pixh, pixw)};
             syt = {zeros(pixh, pixw)};

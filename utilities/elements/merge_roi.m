@@ -17,7 +17,8 @@ function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(m
     %% compute overlapping rois %%
     %%% this should be done in terms of gaussian smoothed rois %%%
     roig = roi_gauss(reshape(full(roi), d1, d2, nseed));
-    roicon = (roig' * roig) > 0;
+    roidenom = (repmat(sum(roig), nseed, 1) + repmat(sum(roig)', 1, nseed)) / 2;
+    roicon = ((roig' * roig) ./ roidenom) > 0.5;
     roicon(1: nseed + 1: nseed ^ 2) = false;
     roicon = triu(roicon);
     

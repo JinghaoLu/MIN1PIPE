@@ -1,9 +1,13 @@
-function [scrout, imgout, xformout] = klt_ref_track(Y, imref, nmaxloop)
+function [scrout, imgout, xformout] = klt_ref_track(Y, imref, nmaxloop, maskc)
 % track with KLT tracker relative to imref
 %   Jinghao Lu, 02/20/2018
     
-    if nargin < 3
+    if nargin < 3 || isempty(nmaxloop)
         nmaxloop = 10;
+    end
+    
+    if nargin < 4 || isempty(maskc)
+        maskc = true(size(imref));
     end
         
     %% KLT tracker %%
@@ -23,20 +27,20 @@ function [scrout, imgout, xformout] = klt_ref_track(Y, imref, nmaxloop)
             
         %%% nmaxloop times realizations %%%
         for ii = 1: nmaxloop
-            [img, xf] = klt2_reg(imref, imcur, 1);
-            scr = get_trans_score_ref(img, imref);
+            [img, xf] = klt2_reg(imref, imcur, 1, maskc);
+            scr = get_trans_score_ref(img, imref, maskc);
             xforms{ii} = xf;
             imgs{ii} = img;
             scrs(ii) = scr;
         end
         
         %%% gather additional fitgeotrans and scores of unregistered frame pairs %%%
-        [img, xf] = klt2_reg(imref, imcur, 2);
-        scr = get_trans_score_ref(img, imref);
+        [img, xf] = klt2_reg(imref, imcur, 2, maskc);
+        scr = get_trans_score_ref(img, imref, maskc);
         xforms{nmaxloop + 1} = xf;
         imgs{nmaxloop + 1} = img;
         scrs(nmaxloop + 1) = scr;
-        scr = get_trans_score_ref(img, imref);
+        scr = get_trans_score_ref(img, imref, maskc);
         scrs(nmaxloop + 2) = scr;
         
         %%% find the transform to use %%%

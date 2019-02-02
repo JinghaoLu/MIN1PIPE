@@ -1,4 +1,4 @@
-function [acorr, duse] = get_trans_score(Y, flag, ispara, isdisp, mq)
+function [acorr, duse] = get_trans_score(Y, flag, ispara, isdisp, mq, maskc)
 % compute translation score with KLT tracker: mean displacement of matched
 % points
 %   Jinghao Lu, 01/30/2018
@@ -21,6 +21,10 @@ function [acorr, duse] = get_trans_score(Y, flag, ispara, isdisp, mq)
         mq = 0.01;
     end
     
+    if nargin < 6 || isempty(maskc)
+        maskc = true(size(Y, 1), size(Y, 2));
+    end
+    
     %% compute score based on the flag signal %%
     regt = Y;
 %     mq = 0.04;
@@ -34,7 +38,7 @@ function [acorr, duse] = get_trans_score(Y, flag, ispara, isdisp, mq)
             try
                 img_old = regt(:, :, i - 1);
                 img = Y(:, :, i);
-                d = klt2(normalize(img_old), normalize(img), biderr, mq);
+                d = klt2(normalize(img_old), normalize(img), biderr, mq, [], [], maskc);
                 duse(i - 1, :) = mean(d, 1);
                 if ~isempty(d)
                     if flag == 1
@@ -59,7 +63,7 @@ function [acorr, duse] = get_trans_score(Y, flag, ispara, isdisp, mq)
             try
                 img_old = regt(:, :, i - 1);
                 img = Y(:, :, i);
-                d = klt2(normalize(img_old), normalize(img), biderr, mq);
+                d = klt2(normalize(img_old), normalize(img), biderr, mq, [], [], maskc);
                 duse(i - 1, :) = mean(d, 1);
                 if ~isempty(d)
                     if flag == 1

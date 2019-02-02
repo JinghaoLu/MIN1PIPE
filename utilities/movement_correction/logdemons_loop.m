@@ -1,4 +1,4 @@
-function [mxout, xfuse, lduse, iduse] = logdemons_loop(mxin, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [mxout, xfuse, lduse, iduse] = logdemons_loop(mxin, pixs, scl, sigma_x, sigma_f, sigma_d, maskc)
 % serial loop of logdemons to register similar neighboring frames
 %   Jinghao Lu, 06/11/2017
 
@@ -25,6 +25,10 @@ function [mxout, xfuse, lduse, iduse] = logdemons_loop(mxin, pixs, scl, sigma_x,
     if nargin < 6 || isempty(sigma_d)
         defpar = default_parameters;
         sigma_d = defpar.mc_sigma_d;
+    end
+    
+    if nargin < 7 || isempty(maskc)
+        maskc = true(size(mxin, 1), size(mxin, 2));
     end
     
     countfn = 1;
@@ -57,17 +61,17 @@ function [mxout, xfuse, lduse, iduse] = logdemons_loop(mxin, pixs, scl, sigma_x,
                 if ismember(ii, idrun)
                     imref = mxint2(:, :, ii);
                     imcur = mxint3(:, :, ii + 1);
-                    [scrtc, imgt, xft] = klt_ref_track(imcur, imref);
-                    scrto = get_trans_score_ref(imcur, imref);
+                    [scrtc, imgt, xft] = klt_ref_track(imcur, imref, maskc);
+                    scrto = get_trans_score_ref(imcur, imref, maskc);
                     if scrtc < scrto
                         imcur = imgt;
                         xfmatrix{ii + 1} = xft{1};
                     else
                         xfmatrix{ii + 1} = affine2d(diag(ones(1, 3)));
                     end
-                    [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d);
+                    [imgo, sx, sy] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
                     imgmatrix(:, :, ii + 1) = imgo;
-                    scrs(ii) = get_trans_score_ref(imgo, imref);
+                    scrs(ii) = get_trans_score_ref(imgo, imref, maskc);
                     temp = cellfun(@(x, y) cat(3, x, y), sx, sy, 'uniformoutput', false);
                     ldmatrix{ii + 1} = temp;
                 end

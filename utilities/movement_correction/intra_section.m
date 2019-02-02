@@ -1,4 +1,4 @@
-function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag)
+function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag, maskc)
 % register frames within stable sections
 %   Jinghao Lu, 02/02/2018
     
@@ -31,6 +31,10 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
         flag = 1;
     end
 
+    if nargin < 10 || isempty(maskc)
+        maskc = true(pixh, pixw);
+    end
+    
     %%% if real selection, jump the logdemons part %%%
     if flag
         sclld = scl;
@@ -42,13 +46,13 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
     df = stp - stt + 1;
     dfc = cumsum(df);
     nff = dfc(end);
-%     ttype = class(m.reg(1, 1, 1));
-%     stype = parse_type(ttype);
-%     nsize = pixh * pixw * nff * stype; %%% size of single %%%
+    %     ttype = class(m.reg(1, 1, 1));
+    %     stype = parse_type(ttype);
+    %     nsize = pixh * pixw * nff * stype; %%% size of single %%%
     nsize = pixh * pixw * nff * 8; %%% size of single %%%
     nbatch = batch_compute(nsize);
     ebatch = ceil(nff / nbatch);
-
+    
     i = 1;
     idbatch = zeros(1, nbatch);
     while dfc(end) > 0
@@ -72,7 +76,7 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
         parfor ii = 1: length(regtpara)
             regtcur = double(regtpara{ii});
             ncur = size(regtcur, 3);
-            [mxcur, xfcur, ldcur, idcur] = lk_ld_hier(regtcur, [], pixs, scl, sigma_x, sigma_f, sigma_d, sclld); %%% lk_loop+lk_cluster+logdemons_loop %%%
+            [mxcur, xfcur, ldcur, idcur] = lk_ld_hier(regtcur, [], pixs, scl, sigma_x, sigma_f, sigma_d, sclld, maskc); %%% lk_loop+lk_cluster+logdemons_loop %%%
             regtcur = logdemons_warp_layers(squeeze(mat2cell(regtcur, pixh, pixw, ones(1, ncur))), xfcur, ldcur);
             regtcur = reshape(cell2mat(regtcur(:)'), pixh, pixw, ncur);
             regtpara{ii} = regtcur;

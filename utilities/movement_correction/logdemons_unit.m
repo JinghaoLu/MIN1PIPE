@@ -1,4 +1,4 @@
-function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, sigma_f, sigma_d, maskc)
 % LogDemons algorithm in loop
 %   Jinghao Lu, 02/22/2018
 
@@ -27,6 +27,10 @@ function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, s
         sigma_d = defpar.mc_sigma_d;
     end
 
+    if nargin < 8 || isempty(maskc)
+        maskc = true(size(imref));
+    end
+    
     %% initialization %%
     pixthres = scl * pixs;
     if gpuDeviceCount >=1
@@ -40,7 +44,7 @@ function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, s
     demr = 255;
     sxfn = {};
     syfn = {};
-    sco = get_trans_score(cat(3, imref, imcur), [], [], [], mq);
+    sco = get_trans_score(cat(3, imref, imcur), [], [], [], mq, maskc);
     flag = true;
     dsc = 1;
     count = 1;
@@ -49,7 +53,7 @@ function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, s
     while (sco > pixthres && dsc > 0) || flag
         [imcurt, sx, sy] = logdemons(demr * imref, demr * imcur, isgpu, nlevel, sigma_x, sigma_f, sigma_d); %%% with sigma_x = 1 %%%
         imcurt = imcurt / demr;
-        sc = get_trans_score(cat(3, imref, gather(imcurt)), [], [], [], mq);
+        sc = get_trans_score(cat(3, imref, gather(imcurt)), [], [], [], mq, maskc);
         dsc = sco - sc;
         flag = false;
         if dsc > 0

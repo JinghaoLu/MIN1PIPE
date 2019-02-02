@@ -1,4 +1,4 @@
-function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_x, sigma_f, sigma_d, maskc)
 % register frames across stable sections
 %   Jinghao Lu, 02/02/2018
     
@@ -25,6 +25,10 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
     if nargin < 8 || isempty(sigma_d)
         defpar = default_parameters;
         sigma_d = defpar.mc_sigma_d;
+    end
+    
+    if nargin < 9 || isempty(maskc)
+        maskc = true(pixh, pixw);
     end
     
     %% prepare inter-section data %%
@@ -82,7 +86,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
             tmp = regpara{i};
                         
             %%% register: lk_logdemons_unit %%%
-            [tmp, xft, sxxt, syyt] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, sigma_f, sigma_d, flag);
+            [tmp, xft, sxxt, syyt] = lk_logdemons_unit(tmp, se, pixs, scl, sigma_x, sigma_f, sigma_d, flag, maskc);
             
             %%% update results %%%
             regpara{i} = tmp;

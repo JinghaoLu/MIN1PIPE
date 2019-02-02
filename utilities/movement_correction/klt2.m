@@ -1,4 +1,4 @@
-function [d, TPoints, SInliers, isFound] = klt2(S, T, biderr, mq, winsize, oldpoints)
+function [d, TPoints, SInliers, isFound] = klt2(S, T, biderr, mq, winsize, oldpoints, maskc)
 % KLT tracker between the two images
 %   Jinghao Lu, 08/25/2017
 
@@ -15,10 +15,24 @@ function [d, TPoints, SInliers, isFound] = klt2(S, T, biderr, mq, winsize, oldpo
         oldpoints = detectMinEigenFeatures(S, 'MinQuality', mq);
         oldpoints = oldpoints.Location;        
     end
+    flagmask = true;
+    if nargin < 7 || isempty(maskc)
+        flagmask = false;
+    end
     pointTracker = vision.PointTracker('MaxBidirectionalError', biderr, 'NumPyramidLevels', 4, 'BlockSize', winsize);
     initialize(pointTracker, oldpoints, S);
     [points, isFound] = step(pointTracker, T);
     TPoints = points(isFound, :);
     SInliers = oldpoints(isFound, :);
+    if flagmask
+        idS = [];
+        for i = 1: size(SInliers, 1)
+            if maskc(round(SInliers(i, 2)), round(SInliers(i, 1)))
+                idS = [idS, i];
+            end
+        end
+        TPoints = TPoints(idS, :);
+        SInliers = SInliers(idS, :);
+    end
     d = TPoints - SInliers;
 end

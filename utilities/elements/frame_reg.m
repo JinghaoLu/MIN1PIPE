@@ -51,6 +51,9 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     %%% preprocess Y first %%%
     dthres = 0.1;
     mskpre = dominant_patch(imaxn, dthres);
+    knl = fspecial('gaussian', [pixh, pixw], min(pixh, pixw) / 4);
+    maxallc = normalize(imaxn .* knl);
+    maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.4;
     ttype = class(m.reg(1, 1, 1));
     stype = parse_type(ttype);
     nsize = pixh * pixw * nf * stype; %%% size of single %%%
@@ -66,7 +69,7 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     %%% get translation score %%%
     fprintf('Begin initial computation of translation score \n')
     nsize = pixh * pixw * nf * stype * 2; %%% size of single in parallel %%%
-    mq = 0.001;
+    mq = 0.01;
     nbatch = batch_compute(nsize);
     ebatch = ceil(nf / nbatch);
     idbatch = [1: ebatch: nf, nf + 1];
@@ -74,34 +77,37 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     acorr = zeros(1, nf - 1);
     for i = 1: nbatch
         tmp = m.reg(1: pixh, 1: pixw, max(1, idbatch(i) - 1): idbatch(i + 1) - 1);
-        acorr(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1, mq);
+        acorr(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1, mq, maskc);
+%         acorr(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1, mq);
     end
 
     %%% cluster movie into hierarchical stable-nonstable sections %%%
-    [stt, stp, flag, scl] = hier_clust(acorr, Fs, pixs, scl, stype, m); %%% flag: real or fake clusters %%%
+    [stt, stp, flag, scl, mc_flag] = hier_clust(acorr, Fs, pixs, scl, stype, m); %%% flag: real or fake clusters %%%
     time = toc(hreg);
     fprintf(['Done initialization, ', num2str(time), ' seconds \n'])
 
-    %% intra-section registration %%
-    fprintf('Begin intra-section \n')
-    m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag);
-    time = toc(hreg);
-    fprintf(['Done intra-section, ', num2str(time), ' seconds \n'])
-
-    %% update stable section %%
-    [sttn, stpn] = section_update(stt, stp, nf);
-    
-    %% nonstable-section registration %%
-    fprintf('Begin nonstable-section \n')
-    m = nonstable_section(m, sttn, stpn, se, pixs, scl, sigma_x, sigma_f, sigma_d);
-    time = toc(hreg);
-    fprintf(['Done nonstable-section, ', num2str(time), ' seconds \n'])
+    if mc_flag
+        %% intra-section registration %%
+        fprintf('Begin intra-section \n')
+        m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, flag, maskc);
+        time = toc(hreg);
+        fprintf(['Done intra-section, ', num2str(time), ' seconds \n'])
         
-    %% inter-section registration %%
-    fprintf('Begin inter-section ... ')
-    m = inter_section(m, sttn, se, pixs, scl, sigma_x, sigma_f, sigma_d);
-    time = toc(hreg);
-    fprintf(['Done inter-section, ', num2str(time), ' seconds \n'])
+        %% update stable section %%
+        [sttn, stpn] = section_update(stt, stp, nf);
+        
+        %% nonstable-section registration %%
+        fprintf('Begin nonstable-section \n')
+        m = nonstable_section(m, sttn, stpn, se, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
+        time = toc(hreg);
+        fprintf(['Done nonstable-section, ', num2str(time), ' seconds \n'])
+        
+        %% inter-section registration %%
+        fprintf('Begin inter-section ... ')
+        m = inter_section(m, sttn, se, pixs, scl, sigma_x, sigma_f, sigma_d, maskc);
+        time = toc(hreg);
+        fprintf(['Done inter-section, ', num2str(time), ' seconds \n'])
+    end
 
     %% spatiotemporal stabilization %%
     m = frame_stab(m);
@@ -119,7 +125,7 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     mn = 0;
     for i = 1: nbatch
         tmp = m.reg(1: pixh, 1: pixw, max(1, idbatch(i) - 1): idbatch(i + 1) - 1);
-        acorrf(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1);
+        acorrf(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1, [], maskc);
         mx = max(mx, max(max(max(tmp, [], 1), [], 2), [], 3));
         mn = min(mx, min(max(min(tmp, [], 1), [], 2), [], 3));
     end
