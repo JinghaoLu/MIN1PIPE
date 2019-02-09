@@ -61,7 +61,7 @@ function [mxout, xfuse, lduse, iduse] = logdemons_loop(mxin, pixs, scl, sigma_x,
                 if ismember(ii, idrun)
                     imref = mxint2(:, :, ii);
                     imcur = mxint3(:, :, ii + 1);
-                    [scrtc, imgt, xft] = klt_ref_track(imcur, imref, maskc);
+                    [scrtc, imgt, xft] = klt_ref_track(imcur, imref, [], maskc);
                     scrto = get_trans_score_ref(imcur, imref, maskc);
                     if scrtc < scrto
                         imcur = imgt;
