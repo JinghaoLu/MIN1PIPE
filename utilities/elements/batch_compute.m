@@ -21,6 +21,7 @@ function mem = unix_mem()
 end
 
 function mem = mac_mem()
-    [~, out] = system('sysctl -a | grep hw.memsize | awk ''{print $2}''');   % get physical system memory
-    mem = out;
+    [~, m] = unix('vm_stat | grep free');
+    spaces = strfind(m, ' ');
+    mem = str2num(m(spaces(end):end)) * 4096;
 end
