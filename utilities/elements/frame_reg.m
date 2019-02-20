@@ -133,6 +133,6 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     %%% normalize %%%
     m = normalize_batch(m.Properties.Source, 'reg', mx, mn, idbatch);
     time = toc(hreg);
-    fprintf(['Done frame reg, total time: ', num2str(time), ' seconds'])
+    fprintf(['Done frame reg, total time: ', num2str(time), ' seconds \n'])
 end
 
