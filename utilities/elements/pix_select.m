@@ -226,7 +226,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
         rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
         lsml = prod(diff(rg, 1, 2) + 1);
         ctr = [x - rg(1, 1) + 1, y - rg(2, 1) + 1];
-        sa = m.reg(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), :);
+        sa = m.reg(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), 1: nf);
                 
         %%% pixel correlation %%%
         tuset = vld_prd_slct(datasmthf(i, :), cutofff(i), pkcutofff(i));

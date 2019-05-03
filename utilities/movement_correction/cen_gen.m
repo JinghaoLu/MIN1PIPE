@@ -9,18 +9,25 @@ function [p0, winsize] = cen_gen(Y)
     Ymax = Ymax(4: end - 3, 4: end - 3);
     ithres = 0.5;
     n = 1;
+    ar = zeros(1, 4);
     count = 0;
-    Yuse = normalize(imgaussfilt(Ymax, 2));
-    while n < 2 && ithres > 0
+    mstp = 11; %%% cut off the boundary %%%
+    Yuset = normalize(imgaussfilt(Ymax, 2));
+    Yuse = Yuset(mstp + 1: end - mstp, mstp + 1: end - mstp);
+    while ~all(ar(3: 4) >= szbd) && ithres > 0
         mskt = Yuse > ithres;
         [l, n] = bwlabeln(mskt);
         count = count + 1;
+        try
+            ar = regionprops(double(mskt), 'BoundingBox');
+            ar = ar.BoundingBox;
+        catch
+            ar = zeros(1, 4);
+        end
         ithres = exp(-0.1 * count) - 0.5;
     end
     
     %%% compute entropy of the raw patch %%%
-    ar = regionprops(double(mskt), 'BoundingBox');
-    ar = ar.BoundingBox;
     entref = entropy(Ymax(round(ar(2)) + 1: round(ar(2)) + ar(4) - 1, round(ar(1)) + 1: round(ar(1)) + ar(3) - 1));
     
     %%% compute the entropy of all subpatches with one continuous component
@@ -48,6 +55,6 @@ function [p0, winsize] = cen_gen(Y)
     else
         bb = bbc{idbest};
     end
-    p0 = 3 + flipud(round(bb(1: 2) + bb(3: 4) / 2)');
+    p0 = mstp + flipud(round(bb(1: 2) + bb(3: 4) / 2)');
     winsize = flipud((2 * floor(bb(3: 4) / 2) - 1)');
 end

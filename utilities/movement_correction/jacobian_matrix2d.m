@@ -29,5 +29,5 @@ function [xdx, xdy, ydx, ydy] = jacobian_matrix2d(vectorField)
 %   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %   adapted by Jinghao Lu, 05/11/2017
 
-[xdx, xdy] = gradient(vectorField{1});
-[ydx, ydy] = gradient(vectorField{2});
+[xdx, xdy] = gradient_fast(vectorField{1});
+[ydx, ydy] = gradient_fast(vectorField{2});

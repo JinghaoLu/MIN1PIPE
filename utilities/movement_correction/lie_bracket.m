@@ -1,4 +1,4 @@
-function [vectorField] = lie_bracket(vectorField,updateVectorField)
+function [vectorField] = lie_bracket(vectorField,updateVectorField,jv,ju)
 % LIE_BRACKET Computes the Lie bracket of vector fields
 %
 %   [vectorField] = lie_bracket(vectorField,updateVectorField)
@@ -30,8 +30,14 @@ function [vectorField] = lie_bracket(vectorField,updateVectorField)
 %   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %   adapted by Jinghao Lu, 05/11/2017
 
-    [v_xdx, v_xdy, v_ydx, v_ydy] = jacobian_matrix2d(vectorField);
-    [u_xdx, u_xdy, u_ydx, u_ydy] = jacobian_matrix2d(updateVectorField);
+    v_xdx = jv{1};
+    v_xdy = jv{2};
+    v_ydx = jv{3};
+    v_ydy = jv{4};
+    u_xdx = ju{1};
+    u_xdy = ju{2};
+    u_ydx = ju{3};
+    u_ydy = ju{4};
     temp{1} = (v_xdx .* updateVectorField{1} + v_xdy.*updateVectorField{2}) - ...
         (u_xdx .* vectorField{1} + u_xdy .* vectorField{2});
     temp{2} = (v_ydx .* updateVectorField{1} + v_ydy .* updateVectorField{2}) - ...

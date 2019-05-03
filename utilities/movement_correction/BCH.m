@@ -33,8 +33,17 @@ function [velocityField] = BCH(velocityField, updateVelocityField)
 %   adapted by Jinghao Lu, 05/11/2017
 
     dims = ndims(velocityField{1});
-    firstExtraTerm = lie_bracket(velocityField, updateVelocityField);
-    secondExtraTerm = lie_bracket(velocityField, firstExtraTerm);
+    
+    [v_xdx, v_xdy, v_ydx, v_ydy] = jacobian_matrix2d(velocityField);
+    [u_xdx, u_xdy, u_ydx, u_ydy] = jacobian_matrix2d(updateVelocityField);
+    jv = {v_xdx,v_xdy,v_ydx,v_ydy};
+    ju = {u_xdx,u_xdy,u_ydx,u_ydy};
+    firstExtraTerm = lie_bracket(velocityField, updateVelocityField, jv, ju);
+    
+    [u_xdx, u_xdy, u_ydx, u_ydy] = jacobian_matrix2d(firstExtraTerm);
+    ju = {u_xdx,u_xdy,u_ydx,u_ydy};
+    secondExtraTerm = lie_bracket(velocityField, firstExtraTerm, jv, ju);
+    
     for k = 1: dims
         velocityField{k} = velocityField{k} + ...
             updateVelocityField{k} + 0.5 * firstExtraTerm{k} + ...

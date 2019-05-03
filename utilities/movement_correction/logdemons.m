@@ -215,7 +215,7 @@ function [ux,uy] = findupdate(F, M, vx, vy, sigma_i, sigma_x)
     diff = F - M_prime;
     
     % moving image gradient
-    [gy,gx] = gradient(M_prime);   % image gradient
+    [gy,gx] = gradient_fast(M_prime);   % image gradient
     normg2 = gx .^ 2 + gy .^ 2;       % squared norm of gradient
 %     area = size(M, 1) * size(M, 2); % area of moving image
     
@@ -284,8 +284,8 @@ end
 function det_J = jacobian(sx, sy)
 
     % Gradients
-    [gx_y, gx_x] = gradient(sx);
-    [gy_y, gy_x] = gradient(sy);
+    [gx_y, gx_x] = gradient_fast(sx);
+    [gy_y, gy_x] = gradient_fast(sy);
     
     % Add identity
     gx_x = gx_x + 1; % zero displacement should yield a transformation T = Identity (points keep their positions)

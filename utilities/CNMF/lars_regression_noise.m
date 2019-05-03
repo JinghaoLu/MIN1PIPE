@@ -52,7 +52,7 @@ M = -X'*X;            % N x N matrix
 i = 1;
 flag = 0;
 while 1
-    if flag == 1;
+    if flag == 1
         W_lam = 0;
         break;
     end
@@ -90,7 +90,7 @@ while 1
          
 %        disp('calc velocity')
         
-        [avec, gamma_plus, gamma_minus] = calcAvec(new, dQ, W, lambda, active_set, M, positive);        
+        [avec, gamma_plus, gamma_minus] = calcAvec(new, dQ, W, lambda, active_set, M);        
         
         % calculate time of travel and next new direction 
                 
@@ -121,7 +121,7 @@ while 1
 
         [g_min, which] = min([gp_min, gm_min]);
 
-        if g_min == inf;               % if there are no possible new components, try move to the end
+        if g_min == inf               % if there are no possible new components, try move to the end
             g_min = lambda;            % This happens when all the components are already active or, if positive==1, when there are no new positive directions 
         end
                  
@@ -208,8 +208,19 @@ if flag == 0
         Aw = X*w_dir;
         y_res = Y - X*(Ws(:,i-1) + w_dir*lambdas(i-1));
         ld = roots([norm(Aw)^2,-2*(Aw'*y_res),y_res'*y_res-noise]);
-        lam = ld(intersect(find(ld>lambdas(i)),find(ld<lambdas(i-1))));
-        if numel(lam) == 0  || any(lam)<0 || any(~isreal(lam));
+        t1 = find(ld>lambdas(i));
+        t2 = find(ld<lambdas(i-1));
+        
+        tmp=[];
+        for j=1:length(t1)
+            tt=t1(j);
+            if any(tt==t2)
+                tmp=[tmp,tt];
+            end
+        end
+
+        lam = ld(tmp);
+        if numel(lam) == 0  || any(lam)<0 || any(~isreal(lam))
             lam = lambdas(i);
         end
         W_lam = Ws(:,i-1) + w_dir*(lambdas(i-1)-lam(1));
@@ -235,7 +246,7 @@ end
 
 
 %%
-function [avec, gamma_plus, gamma_minus] = calcAvec(new, dQ, W, lambda, active_set, M, positive)
+function [avec, gamma_plus, gamma_minus] = calcAvec(new, dQ, W, lambda, active_set, M)
 
 [r,c] = find(active_set);
 Mm = -M(r,r);
@@ -260,17 +271,18 @@ b = b(active_set == 1);
 
 % avec = Mm\b;
 avec = pinv(Mm) * b; %%% avoid NaN %%%
+% avec = lsqminnorm(Mm, b); %%% avoid NaN %%%
 
-if positive 
-    if new 
-        in = sum(active_set(1:new));
-        if avec(in) <0
-            new;
-            %error('new component of a is negative')
-            flag = 1;
-        end
-    end
-end
+% if positive 
+%     if new 
+%         in = sum(active_set(1:new));
+%         if avec(in) <0
+% %             new;
+%             %error('new component of a is negative')
+%             flag = 1;
+%         end
+%     end
+% end
 
     
 
