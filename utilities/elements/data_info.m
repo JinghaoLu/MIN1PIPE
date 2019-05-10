@@ -3,7 +3,7 @@ function [path_name, file_base, file_fmt] = data_info
 %   Jinghao Lu 01/12/2016
 
 %     [file_name_tmp, path_name] = uigetfile({'*.tif'; '*.tiff'; '*.avi'}, 'Select coordinates file', 'MultiSelect', 'on');
-    [file_name_tmp, path_name] = uigetfile('*', 'Select coordinates file', 'MultiSelect', 'on');
+    [file_name_tmp, path_name] = uigetfile('*', 'Select imaging file', 'MultiSelect', 'on');
     if ~iscell(file_name_tmp)
         file_name{1} = file_name_tmp;
     else
