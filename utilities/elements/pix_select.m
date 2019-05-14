@@ -78,9 +78,11 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     end
     
     proj1 = (sum(mxmx, 3) > 0) | (imregionalmax(imgaussfilt(maxall, 1)));
-    knl = fspecial('gaussian', [pixh, pixw], min(pixh, pixw) / 4);
-    maxallc = normalize(maxall .* knl);
-    maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.4;
+    dthres = 1 / 15;
+%     knl = fspecial('gaussian', [pixh, pixw], max(pixh, pixw) / 4);
+%     maxallc = normalize(maxall .* knl);
+%     maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.4;
+    maskc = bwconvhull(normalize(maxall) > dthres);
     if sum(maskc(:)) == 0
         maskc = true(size(maxall));
     end
@@ -135,21 +137,43 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     imgmax = maxall;
     imgmax = imgmax(imgmax > 0);
     tmp1 = sort(imgmax);
-    tmp2 = linspace(tmp1(1), 2 * tmp1(end), length(tmp1));
+    tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
     tmp = tmp1(:) - tmp2(:);
-    [~, idthres] = min(tmp);
-    ithres = tmp1(idthres);
+    x = 1: length(tmp);
+    sker = 2 * round(length(tmp) / 100) + 1;
+    xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
+    tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
+    tmpg = smooth(diff(smooth(tmpt, sker)), sker);
+    tmpg = tmpg(x);
+    idthres = find(tmpg >= 0, 1);
+    ithres = min(0.1, tmp1(idthres));
 
     imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
     imgmaxt = imgmax(imgmax > 0);
     tmp1 = sort(imgmaxt);
-    tmp2 = linspace(tmp1(1), 4 * tmp1(end), length(tmp1));
+    tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
     tmp = tmp1(:) - tmp2(:);
-    [~, idthres] = min(tmp);
+    x = 1: length(tmp);
+    sker = 2 * round(length(tmp) / 100) + 1;
+    xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
+    tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
+    tmpg = smooth(diff(smooth(tmpt, sker)), sker);
+    tmpg = tmpg(x);
+    idthres = find(tmpg >= 0, 1);
     ithres = tmp1(idthres);
     [~, idm, ~] = intersect(mxuse, find(imgmax(:) > ithres));
     datuse = datause2(idm, :);
     iduse = mxuse(idm);
+    
+    %% neuronal shape filter %%
+    krnt = fspecial('gaussian', [pixh, pixw], floor(sz / 2));
+    krn = krnt(floor(pixh / 2 - sz): ceil(pixh / 2 + sz), floor(pixw / 2 - sz): ceil(pixw / 2 + sz));
+    maxcorr = normxcorr2(krn, maxall);
+    [hk, wk] = size(krn);
+    maxcorr = maxcorr(ceil(hk / 2): end - ceil(hk / 2) + 1, ceil(wk / 2): end - ceil(wk / 2) + 1);
+    [~, idm, ~] = intersect(iduse, find(maxcorr(:) > 0));
+    datuse = datuse(idm, :);
+    iduse = iduse(idm);    
         
     %% seeds refine: preparation for temporal calcium spike dynamics %%
     gsw = 1 * Fs;

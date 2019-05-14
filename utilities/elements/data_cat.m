@@ -1,5 +1,6 @@
 function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, file_fmt, Fsi, Fsi_new, ratio, ttype)
-% Concatinate data pieces from raw 4GB-tiff chunks
+% Concatinate data pieces from raw 4GB-tif chunks,
+%   new tiff files,
 %   or avi files from UCLA miniscope
 %   parallel or serial version supported
 %   Jinghao Lu 01/16/2016
@@ -28,124 +29,124 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
     end
         
     if ~contains(file_fmt, 'mat')
-        %% initialize to get info %%
-        if contains(file_fmt, 'avi')
-            dirst = [dir([path_name, file_base, '.avi']); dir([path_name, file_base, '*', '.avi'])];
-        elseif contains(file_fmt, 'tiff')
-            dirst = [dir([path_name, file_base, '.tiff']); dir([path_name, file_base, '-*', '.tiff'])];
-        elseif contains(file_fmt, 'tif')
-            dirst = [dir([path_name, file_base, '.tif']); dir([path_name, file_base, '-*', '.tif'])];
-        end
-        dirs = cell(1, length(dirst));
-        nft = zeros(1, length(dirst));
-        idx = zeros(1, length(dirst));
-        
-        %% get info %%
-        disp('Begin collecting datasets info')
-        for i = 1: length(dirst)
-            dirs{i} = dirst(i).name;
-            if contains(file_fmt, 'avi')
-                info = matlab.internal.VideoReader([path_name, dirs{i}]);
-                ts = info.Timestamps;
-                nft(i) = length(ts);
-                temp1 = strfind(dirs{i}, file_base);
-                temp2 = strfind(dirs{i}, '.');
-                idx(i) = str2double(dirst(i).name(temp1 + length(file_base): temp2 - 1));
-            else
-                info = imfinfo([path_name, dirs{i}]);
-                nft(i) = numel(info);
-                temp = strfind(dirst(i).name, '-');
-                if isempty(temp)
-                    idx(i) = 0;
-                else
-                    idx(i) = str2double(dirst(i).name(temp + 1: temp + 3));
-                end
-            end
-        end
-        time = toc(hcat);
-        disp(['Done collecting datasets info, time: ', num2str(time)])
-        
-        %% initialization to get frames %%
-        if contains(file_fmt, 'avi')
-            info = VideoReader([path_name, dirs{1}]);
-            dtype = ['uint', num2str(info.BitsPerPixel)];
-            vfmt = info.VideoFormat;
-            if strcmp(vfmt, 'RGB24')
-                dtype = 'uint8';
-            end
-        else
-            info = imfinfo([path_name, dirs{1}]);
-            dtype = ['uint', num2str(info(1).BitDepth)];
-        end
-        pixwo = info(1,1).Width;
-        pixho = info(1,1).Height;
-        pixw = round(pixwo * ratio);
-        pixh = round(pixho * ratio);
-        ds = Fsi / Fsi_new;
-        [~, induse] = sort(idx);
-        dirs = dirs(induse);
-        nft = nft(induse);
-        nf = sum(nft);
-        f_idx = zeros(1, nf);
-        dir_idx = cell(1, nf);
-        for i = 1: length(nft)
-            f_idx(sum(nft(1: i - 1)) + 1: sum(nft(1: i))) = 1: nft(i);
-            dir_idx(sum(nft(1: i - 1)) + 1: sum(nft(1: i))) = repmat(dirs(i), 1, nft(i));
-        end
-        f_use = 1: ds: nf;
-        f_idx = f_idx(f_use);
-        dir_idx = dir_idx(f_use);
-        nf = length(f_use);
-        cnft = unique([find(diff(f_idx) < 0), nf]);
-        dir_uset = unique(dir_idx, 'stable');
-        %     dir_idt = [dir_idt; nf + 1];
-        
-        %%% clear some variables %%%
-        clear info
-        
-        %% batch configuration %%
-        %%% parameters %%%
-        stype = parse_type(ttype);
-        nsize = pixh * pixw * nf * stype; %%% size of single %%%
-        nbatch = batch_compute(nsize);
-        ebatch = ceil(nf / nbatch);
-        
-        %%% extract batch-wise frame info %%%
-        idbatch = [1: ebatch: nf, nf + 1];
-        nbatch = length(idbatch) - 1;
-        rg = sort([cnft + 1, idbatch(1: end-1)]);
-        bcount = 1;
-        dir_use = cell(1, nbatch);
-        dir_nft = cell(1, nbatch);
-        
-        for i = 1: length(rg) - 1
-            dirtmp = dir_idx(rg(i): rg(i + 1) - 1);
-            dir_use{bcount} = [dir_use{bcount}, unique(dirtmp)];
-            dir_nft{bcount} = [dir_nft{bcount}, rg(i + 1) - rg(i)];
-            if idbatch(bcount + 1) == rg(i + 1)
-                bcount = bcount + 1;
-            end
-        end
-        
-        %%% clear some variables %%%
-        clear dir_idx
-        
-        %% collect data %%
-        disp('Begin data cat')
         filename = [path_name, file_base, '_frame_all.mat'];
-        %     imaxn = zeros(pixh, pixw);
-        %     imean = zeros(pixh, pixw);
         msg = 'Overwrite raw .mat file (data)? (y/n)';
         overwrite_flag = judge_file(filename, msg);
-        
-        %%% save data to the .mat file %%%
-        imaxf = zeros(pixh, pixw);
-        iminf = zeros(pixh, pixw);
-        imeanf = zeros(pixh, pixw);
         if overwrite_flag
             if exist(filename, 'file')
                 delete(filename);
             end
+
+            %% initialize to get info %%
+            if contains(file_fmt, 'avi')
+                dirst = [dir([path_name, file_base, '.avi']); dir([path_name, file_base, '*', '.avi'])];
+            elseif contains(file_fmt, 'tiff')
+                dirst = [dir([path_name, file_base, '.tiff']); dir([path_name, file_base, '-*', '.tiff'])];
+            elseif contains(file_fmt, 'tif')
+                dirst = [dir([path_name, file_base, '.tif']); dir([path_name, file_base, '-*', '.tif'])];
+            end
+            dirs = cell(1, length(dirst));
+            nft = zeros(1, length(dirst));
+            idx = zeros(1, length(dirst));
+            
+            %% get info %%
+            disp('Begin collecting datasets info')
+            for i = 1: length(dirst)
+                dirs{i} = dirst(i).name;
+                if contains(file_fmt, 'avi')
+                    info = matlab.internal.VideoReader([path_name, dirs{i}]);
+                    ts = info.Timestamps;
+                    nft(i) = length(ts);
+                    temp1 = strfind(dirs{i}, file_base);
+                    temp2 = strfind(dirs{i}, '.');
+                    idx(i) = str2double(dirst(i).name(temp1 + length(file_base): temp2 - 1));
+                else
+                    info = imfinfo([path_name, dirs{i}]);
+                    nft(i) = numel(info);
+                    temp = strfind(dirst(i).name, '-');
+                    if isempty(temp)
+                        idx(i) = 0;
+                    else
+                        idx(i) = str2double(dirst(i).name(temp + 1: temp + 3));
+                    end
+                end
+            end
+            time = toc(hcat);
+            disp(['Done collecting datasets info, time: ', num2str(time)])
+            
+            %% initialization to get frames %%
+            if contains(file_fmt, 'avi')
+                info = VideoReader([path_name, dirs{1}]);
+                dtype = ['uint', num2str(info.BitsPerPixel)];
+                vfmt = info.VideoFormat;
+                if strcmp(vfmt, 'RGB24')
+                    dtype = 'uint8';
+                end
+            else
+                info = imfinfo([path_name, dirs{1}]);
+                dtype = ['uint', num2str(info(1).BitDepth)];
+            end
+            pixwo = info(1,1).Width;
+            pixho = info(1,1).Height;
+            pixw = round(pixwo * ratio);
+            pixh = round(pixho * ratio);
+            ds = Fsi / Fsi_new;
+            [~, induse] = sort(idx);
+            dirs = dirs(induse);
+            nft = nft(induse);
+            nf = sum(nft);
+            f_idx = zeros(1, nf);
+            dir_idx = cell(1, nf);
+            for i = 1: length(nft)
+                f_idx(sum(nft(1: i - 1)) + 1: sum(nft(1: i))) = 1: nft(i);
+                dir_idx(sum(nft(1: i - 1)) + 1: sum(nft(1: i))) = repmat(dirs(i), 1, nft(i));
+            end
+            f_use = 1: ds: nf;
+            f_idx = f_idx(f_use);
+            dir_idx = dir_idx(f_use);
+            nf = length(f_use);
+            cnft = unique([find(diff(f_idx) < 0), nf]);
+            dir_uset = unique(dir_idx, 'stable');
+            %     dir_idt = [dir_idt; nf + 1];
+            
+            %%% clear some variables %%%
+            clear info
+            
+            %% batch configuration %%
+            %%% parameters %%%
+            stype = parse_type(ttype);
+            nsize = pixh * pixw * nf * stype; %%% size of single %%%
+            nbatch = batch_compute(nsize);
+            ebatch = ceil(nf / nbatch);
+            
+            %%% extract batch-wise frame info %%%
+            idbatch = [1: ebatch: nf, nf + 1];
+            nbatch = length(idbatch) - 1;
+            rg = sort([cnft + 1, idbatch(1: end-1)]);
+            bcount = 1;
+            dir_use = cell(1, nbatch);
+            dir_nft = cell(1, nbatch);
+            
+            for i = 1: length(rg) - 1
+                dirtmp = dir_idx(rg(i): rg(i + 1) - 1);
+                dir_use{bcount} = [dir_use{bcount}, unique(dirtmp)];
+                dir_nft{bcount} = [dir_nft{bcount}, rg(i + 1) - rg(i)];
+                if idbatch(bcount + 1) == rg(i + 1)
+                    bcount = bcount + 1;
+                end
+            end
+            
+            %%% clear some variables %%%
+            clear dir_idx
+        
+            %% collect data %%
+            disp('Begin data cat')
+            
+            %%% save data to the .mat file %%%
+            imaxf = zeros(pixh, pixw);
+            iminf = zeros(pixh, pixw);
+            imeanf = zeros(pixh, pixw);
+
             rgcount = 1;
             stto = [];
             fname_useo = [];
@@ -249,7 +250,15 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             m = normalize_batch(filename, 'frame_all', imx, imn, idbatch);
         else %%% get outputs from the saved data file %%%
             m = matfile(filename);
+            [pixh, pixw, nf] = size(m, 'frame_all');
             imaxf = zeros(pixh, pixw);
+            imeanf = zeros(pixh, pixw);
+            stype = parse_type(ttype);
+            nsize = pixh * pixw * nf * stype; %%% size of single %%%
+            nbatch = batch_compute(nsize);
+            ebatch = ceil(nf / nbatch);
+            idbatch = [1: ebatch: nf, nf + 1];
+            nbatch = length(idbatch) - 1;
             for i = 1: nbatch
                 tmp = m.frame_all(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
                 imaxf = max(cat(3, max(tmp, [], 3), imaxf), [], 3);
