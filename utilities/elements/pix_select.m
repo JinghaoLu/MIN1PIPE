@@ -78,11 +78,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     end
     
     proj1 = (sum(mxmx, 3) > 0) | (imregionalmax(imgaussfilt(maxall, 1)));
-    dthres = 1 / 15;
-%     knl = fspecial('gaussian', [pixh, pixw], max(pixh, pixw) / 4);
-%     maxallc = normalize(maxall .* knl);
-%     maskc = normalize(imgaussfilt(feature2_comp(maxallc, 0, 100, 5), 100 * size(maxallc) / max(size(maxallc)))) > 0.4;
-    maskc = bwconvhull(normalize(maxall) > dthres);
+    maskc = bwconvhull(maxall > intensity_filter(maxall));
     if sum(maskc(:)) == 0
         maskc = true(size(maxall));
     end
@@ -114,54 +110,16 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     [~, iuse] = max(G.mu);
     scall = posterior(G, scmn);
     idxuse2 = scall(:, iuse) > 0.5;
-    mxuse = mxs(idxuse2);
-    datause2 = datause(idxuse2, :);
+    idxuse3 = scmn > intensity_filter(scmn);
+    mxuse = mxs(idxuse2 & idxuse3);
+    datause2 = datause(idxuse2 & idxuse3, :);
     time = toc(hpix);
     disp(['Done coarse selection, ', num2str(time), ' seconds'])
     
-    %% signal level %%
-%     %%% signal level fiter (compared to noise) %%%
-%     ffts = fft(datause2, [], 2);
-%     nft = size(ffts, 2);
-%     nf4 = round(nft / 4);
-%     rgs = [floor(nft / 2 + 1) - nf4, ceil(nft / 2 + 1) + nf4];
-%     ffts(:, [1: rgs(1), rgs(2): end]) = 0;
-%     datt = ifft(ffts, [], 2);
-%     rgnoise = max(datt(:, 2: end - 1), [], 2) - min(datt(:, 2: end - 1), [], 2);
-%     rgsig = max(datause2, [], 2) - min(datause2, [], 2);
-%     idm = rgsig ./ rgnoise > sigthres;
-%     datause2 = datause2(idm, :);
-%     mxuse = mxuse(idm);
-    
+    %% signal level %%    
     %%% max intensity filter %%%
-    imgmax = maxall;
-    imgmax = imgmax(imgmax > 0);
-    tmp1 = sort(imgmax);
-    tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
-    tmp = tmp1(:) - tmp2(:);
-    x = 1: length(tmp);
-    sker = 2 * round(length(tmp) / 100) + 1;
-    xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
-    tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
-    tmpg = smooth(diff(smooth(tmpt, sker)), sker);
-    tmpg = tmpg(x);
-    idthres = find(tmpg >= 0, 1);
-    ithres = min(0.1, tmp1(idthres));
-
-    imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
-    imgmaxt = imgmax(imgmax > 0);
-    tmp1 = sort(imgmaxt);
-    tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
-    tmp = tmp1(:) - tmp2(:);
-    x = 1: length(tmp);
-    sker = 2 * round(length(tmp) / 100) + 1;
-    xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
-    tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
-    tmpg = smooth(diff(smooth(tmpt, sker)), sker);
-    tmpg = tmpg(x);
-    idthres = find(tmpg >= 0, 1);
-    ithres = tmp1(idthres);
-    [~, idm, ~] = intersect(mxuse, find(imgmax(:) > ithres));
+    ithres = intensity_filter(maxall);
+    [~, idm, ~] = intersect(mxuse, find(maxall(:) > ithres));
     datuse = datause2(idm, :);
     iduse = mxuse(idm);
     

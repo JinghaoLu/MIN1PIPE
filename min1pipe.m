@@ -90,23 +90,28 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             mask = dominant_patch(imaxy);
             
             %% frame register %%
-            if ismc && overwrite_flag
-                pixs = min(pixh, pixw);
-                Params.mc_pixs = pixs;
-                Fsi_new = Params.Fsi_new;
-                scl = Params.neuron_size / (7 * pixs);
-                sigma_x = Params.mc_sigma_x;
-                sigma_f = Params.mc_sigma_f;
-                sigma_d = Params.mc_sigma_d;
-                se = Params.neuron_size;
-                [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
-                Params.mc_scl = scl; %%% update latest scl %%%
-                
-                file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
-                if exist(file_name_to_save, 'file')
-                    delete(file_name_to_save)
+            if overwrite_flag
+                if ismc
+                    pixs = min(pixh, pixw);
+                    Params.mc_pixs = pixs;
+                    Fsi_new = Params.Fsi_new;
+                    scl = Params.neuron_size / (7 * pixs);
+                    sigma_x = Params.mc_sigma_x;
+                    sigma_f = Params.mc_sigma_f;
+                    sigma_d = Params.mc_sigma_d;
+                    se = Params.neuron_size;
+                    [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+                    Params.mc_scl = scl; %%% update latest scl %%%
+                    
+                    file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
+                    if exist(file_name_to_save, 'file')
+                        delete(file_name_to_save)
+                    end
+                    save(file_name_to_save, 'corr_score', 'raw_score', '-v7.3');
+                else
+                    %%% spatiotemporal stabilization %%%
+                    m = frame_stab(m);
                 end
-                save(file_name_to_save, 'corr_score', 'raw_score', '-v7.3');
             end
             
             time1 = toc(hpipe);
