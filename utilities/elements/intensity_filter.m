@@ -1,6 +1,6 @@
 function ithres = intensity_filter(maxall)
     tmp1 = maxall;
-    tmp1 = tmp1(tmp1 > 0);
+    tmp1 = tmp1(tmp1 > 1/2^8); %%% above 0 in terms of single precision %%%
     try
         nbins = round(length(tmp1) / 10);
         [tmp1, ctrs] = hist(tmp1, nbins);
@@ -28,19 +28,19 @@ function ithres = intensity_filter(maxall)
         tmpg = tmpg(x);
         idthres = find(tmpg >= 0, 1);
         ithres = min(prctile(tmp1, 95), tmp1(idthres));
-        
-        imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
-        imgmaxt = imgmax(imgmax > 0);
-        tmp1 = sort(imgmaxt);
-        tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
-        tmp = tmp1(:) - tmp2(:);
-        x = 1: length(tmp);
-        sker = 2 * round(length(tmp) / 100) + 1;
-        xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
-        tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
-        tmpg = smooth(diff(smooth(tmpt, sker)), sker);
-        tmpg = tmpg(x);
-        idthres = find(tmpg >= 0, 1);
-        ithres = tmp1(idthres);    
+%         
+%         imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
+%         imgmaxt = imgmax(imgmax > 0);
+%         tmp1 = sort(imgmaxt);
+%         tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
+%         tmp = tmp1(:) - tmp2(:);
+%         x = 1: length(tmp);
+%         sker = 2 * round(length(tmp) / 100) + 1;
+%         xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
+%         tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
+%         tmpg = smooth(diff(smooth(tmpt, sker)), sker);
+%         tmpg = tmpg(x);
+%         idthres = find(tmpg >= 0, 1);
+%         ithres = tmp1(idthres);    
     end
 end
