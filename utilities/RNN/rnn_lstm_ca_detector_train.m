@@ -54,7 +54,7 @@ model.pars = pars;
 % lbl = train_lbl;
 seq = sig;
 % lbl = test_lbl;
-[labelout, P] = lstm_predict(seq, model);
+[labelout, P] = seeds_cleansing_rnn(seq, model);
 
 PP = reshape(P, 2, [], size(seq, 1));
 aa = squeeze(max(PP, [], 2));
