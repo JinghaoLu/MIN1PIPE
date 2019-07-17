@@ -162,21 +162,32 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                         if strcmp(dir_use{ib}{i}, fname_useo)
                             stt = stto;
                         else
-                            fid = fopen([path_name, dir_use{ib}{i}], 'r');
-                            headert = fread(fid, 10000, [dtype, '=>', dtype]);
-                            headert = headert(:)';
-%                             h1 = strfind(headert, 'movi');
-%                             dlen = headert(h1 + 8: h1 + 11);
-%                             ndframe = typecast(dlen, 'uint32');
-%                             stt1 = h1 + 11;
+                            hstep1 = 20;
+                            hstep2 = 10000;
+                            headert = d_raw(1: hstep2)';
                             h1 = strfind(headert, 'movi00db');
                             dlen = headert(h1 + 8: h1 + 11);
                             ndframe = double(typecast(dlen, 'uint32'));
-                            stt1 = h1 + 7;
+                            stt1 = h1 + 11;
                             idt = find(strcmp(dir_uset, dir_use{ib}{i}));
                             stt = zeros(nft(idt), 1);
-                            for ii = 1: nft(idt)
-                                stt(ii) = stt1 + (ii - 1) * (ndframe + 8);
+                            stt(1) = stt1;
+                            stp = stt1 + ndframe;
+                            target = ['00db', char(dlen)];
+                            for ii = 2: nft(idt)
+                                headert = d_raw(stp + 1: stp + hstep1)';
+                                h1 = strfind(headert, target);
+                                if isempty(h1)
+                                    while isempty(h1)
+                                        headert = d_raw(stp + 1: stp + hstep2)';
+                                        h1 = strfind(headert, target);
+                                        stp = stp + hstep2;
+                                    end
+                                    stp = stp - hstep2;
+                                end
+                                stt1 = h1 + 7;
+                                stt(ii) = stt1 + stp;
+                                stp = stt(ii) + ndframe;
                             end
                             stto = stt;
                         end
