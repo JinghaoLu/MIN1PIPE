@@ -127,6 +127,10 @@ function m = nonstable_section(m, sttn, stpn, se, pixs, scl, sigma_x, sigma_f, s
                 %%%% update the variable %%%%
                 regpara{ii - stof} = regcur;
                 
+                %%%% release worker memory %%%%
+                regcur = [];
+                tmp = [];
+                
                 %%%% stats display %%%%
                 if length(bstt) < 10
                     disp(['Done nonstable-LogDemons section # ', num2str(ii + stof), '/', num2str(length(bstt))])

@@ -80,6 +80,11 @@ function m = intra_section(m, stt, stp, pixs, scl, sigma_x, sigma_f, sigma_d, fl
             regtcur = logdemons_warp_layers(squeeze(mat2cell(regtcur, pixh, pixw, ones(1, ncur))), xfcur, ldcur);
             regtcur = reshape(cell2mat(regtcur(:)'), pixh, pixw, ncur);
             regtpara{ii} = regtcur;
+            
+            %%%% release worker memory %%%%
+            regtcur = [];
+            ldcur = [];
+            
             if length(stt) < 10
                 disp(['Done intra_section # ', num2str(ii + stof), '/', num2str(length(stt)), ', batch ', num2str(i), '/', num2str(nbatch)])
             else

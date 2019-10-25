@@ -94,6 +94,9 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
             sxx{i} = sxxt;
             syy{i} = syyt;
             idxx{i} = idt;
+            tmp = [];
+            sxxt = [];
+            syyt = [];
 %             disp(num2str(i))
         end
         
@@ -123,15 +126,19 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
     xfall = cell(1, nn);
     sxall = cell(1, nn);
     syall = cell(1, nn);
+    count = 0;
     for i = 1: length(xf)
         for j = 1: length(xf{i})
             idt = id{i}{j};
             for k = 1: length(idt)
                 idc = istep ^ (i - 1) * (idt(k) - 1) + 1: min(nn, istep ^ (i - 1) * idt(k));
                 for ii = 1: length(idc)
-                    xfall{idc(ii)} = [xfall{idc(ii)}, {xf{i}{j}{k}}];
-                    sxall{idc(ii)} = [sxall{idc(ii)}, {sx{i}{j}{k}}];
-                    syall{idc(ii)} = [syall{idc(ii)}, {sy{i}{j}{k}}];
+                    xfall{idc(ii)} = [xfall{idc(ii)}, xf{i}{j}(k)];
+                    sxall{idc(ii)} = [sxall{idc(ii)}, sx{i}{j}(k)];
+                    syall{idc(ii)} = [syall{idc(ii)}, sy{i}{j}(k)];
+                    for kk = 1: length(sx{i}{j}{k})
+                        count = count + size(sx{i}{j}{k}{kk}, 3);
+                    end
                 end
             end
         end
@@ -144,7 +151,8 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
     nff = dfc(end);
     ttype = class(m.reg(1, 1, 1));
     stype = parse_type(ttype);
-    nsize = pixh * pixw * nff * stype * 8; %%% heuristic size of algorithm %%%
+%     nsize = pixh * pixw * nff * stype * 8; %%% heuristic size of algorithm %%%
+    nsize = pixh * pixw * count * stype * 16; %%% heuristic size of algorithm %%%
     nbatch = batch_compute(nsize);
     ebatch = round(nff / nbatch);
     
@@ -169,7 +177,8 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
         
         %%%% warp main %%%%
         stof = idbatch(i);
-        parfor ip = 1: length(Yuse)
+        nY = length(Yuse);
+        parfor ip = 1: nY
             regt = Yuse{ip};
             if ~isempty(xfall{ip + stof})
                 for j = 1: length(xfall{ip + stof})
@@ -183,6 +192,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
                 end
             end
             Yuse{ip} = regt;
+            regt = [];
         end
         
         %%%% data update %%%%
