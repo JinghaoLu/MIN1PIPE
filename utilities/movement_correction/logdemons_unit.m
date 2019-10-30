@@ -35,6 +35,11 @@ function [imgo, sxfn, syfn] = logdemons_unit(imref, imcur, pixs, scl, sigma_x, s
     pixthres = scl * pixs;
     if gpuDeviceCount >=1
         isgpu = true;
+        try
+            gpuDevice(1);
+        catch
+            isgpu = false;
+        end
     else
         isgpu = false;
     end
