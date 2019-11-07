@@ -5,7 +5,7 @@ function thres = movement_thres(acorr)
     y = y(:);
     x = ctr(ids: end);
     x = x(:);
-    ys = smooth(y, round(length(y) / 20));
+    ys = smooth(y, max(1, round(length(y) / 20)));
     
     yy = linspace(4 * y(1), y(end), length(x));
     tmp = ys(:) - yy(:);
