@@ -20,7 +20,7 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 
 
 ## Updates
-***11/19/2019*** New version released (v2-alpha): new neural enhancing module with noise suppression: reduce the effect of sharp background structures. Add new output variable **`dff`** for dF/F. Feedbacks regarding the bugs and/or suggestions are welcome.
+***11/19/2019*** **New version released (v2-alpha): new neural enhancing module with noise suppression: reduce the effect of sharp background structures. Add new output variable **`dff`** for dF/F. Feedbacks regarding the bugs and/or suggestions are welcome.**
 
 ***11/01/2018*** New version released: updated movement correction module - balanced the running time for extremely large or shading videos; updated neural enhancing module - introduced dirt-cleaning function for dirty videos (potentially with dirts on the imaging sensor); updated seeds cleansing module - better seeds cleansing filters for seeds selection. Feedbacks regarding the bugs and/or suggestions are welcome.
 
