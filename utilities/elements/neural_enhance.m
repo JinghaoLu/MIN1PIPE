@@ -76,6 +76,7 @@ function [m_out, imaxf, overwrite_flag] = neural_enhance(m_in, filename, Params)
         %% normalize Ydebg %%
         imx = max(imaxf(:));
         imn = min(iminf(:));
+        imaxf = normalize(imaxf);
         m_out = normalize_batch(filename, 'reg', imx, imn, idbatch);
     else
         m_out = matfile(filename, 'writable', true);

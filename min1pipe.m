@@ -86,6 +86,11 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
             [m, imaxy, overwrite_flag] = neural_enhance(m, filename_reg, Params);
             
+            %% neural enhancing postprocess %%
+            if overwrite_flag
+                m = noise_suppress(m, imaxy);
+            end
+            
             %% get rough roi domain %%
             mask = dominant_patch(imaxy);
             
@@ -165,6 +170,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             [sigfn, bgffn, ~, spkfn] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
             sigfn = max(roifn, [], 1)' .* sigfn;
             roifn = roifn ./ max(roifn, [], 1);
+            dff = sigfn ./ mean(sigfn, 2);
             
             %% save data %%
             stype = parse_type(class(m.reg(1, 1, 1)));
@@ -188,9 +194,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             end
             
             if ismc
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params', '-v7.3');
+                save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params', '-v7.3');
             else
-                save(file_name_to_save, 'roifn', 'sigfn', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
+                save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
             end
             
             save(file_name_to_save, 'imaxn', 'imaxy', '-append');
