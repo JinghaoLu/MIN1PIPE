@@ -86,8 +86,10 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                 info = imfinfo([path_name, dirs{1}]);
                 dtype = ['uint', num2str(info(1).BitDepth)];
             end
-            pixwo = info(1,1).Width;
-            pixho = info(1,1).Height;
+%             pixwo = info(1,1).Width;
+%             pixho = info(1,1).Height;
+            pixwo = info.Width;
+            pixho = info.Height;
             pixw = round(pixwo * ratio);
             pixh = round(pixho * ratio);
             ds = Fsi / Fsi_new;
