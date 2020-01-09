@@ -232,10 +232,11 @@ function min1pipe_init
     end
     
     %%% set path and setup cvx if not on path %%%
+    cvx_dir = [pathtop1, 'utilities'];
+    pathcvx = [cvx_dir, filesep, 'cvx', filesep, 'cvx_setup.m'];
     if ~onPath
         pathall = genpath(pathtop1);
         addpath(pathall)
-        cvx_dir = [pathtop1, 'utilities'];
         if ~exist([cvx_dir, filesep, 'cvx'], 'dir')
             if ispc
                 cvxl = 'http://web.cvxr.com/cvx/cvx-w64.zip';
@@ -247,8 +248,9 @@ function min1pipe_init
             disp('Downloading CVX');
             unzip(cvxl, cvx_dir);
         end
-        pathcvx = [cvx_dir, filesep, 'cvx', filesep, 'cvx_setup.m'];
-        run(pathcvx)
+    end
+    if ~exist(fullfile(fileparts(prefdir), 'cvx_prefs.mat'), 'file')
+        run(pathcvx);
     end
 end
 
