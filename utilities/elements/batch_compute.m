@@ -15,9 +15,8 @@ function mem = pc_mem()
 end
 
 function mem = unix_mem()
-    [~, out] = system('vmstat -s -S M | grep "free memory"');
-    mem = sscanf(out, '%f  free memory');
-    mem = mem * 1024 ^ 2;
+    [~, out] = system('cat /proc/meminfo |grep MemAvailable');
+    mem = sscanf(out, 'MemAvailable: %f');
 end
 
 function mem = mac_mem()
