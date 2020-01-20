@@ -165,7 +165,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                             stt = stto;
                         else
                             hstep1 = 20;
-                            hstep2 = 10000;
+                            hstep2 = 10000000;
                             headert = d_raw(1: hstep2)';
                             h1 = strfind(headert, 'movi00db');
                             dlen = headert(h1 + 8: h1 + 11);
