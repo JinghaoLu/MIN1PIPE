@@ -16,7 +16,8 @@ end
 
 function mem = unix_mem()
     [~, out] = system('cat /proc/meminfo |grep MemAvailable');
-    mem = sscanf(out, 'MemAvailable: %f');
+    mem = sscanf(out, 'MemAvailable: %f'); % in KiB
+    mem = mem * 1024; % in bytes
 end
 
 function mem = mac_mem()
