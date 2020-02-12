@@ -66,7 +66,8 @@ function [mxout, xfuse, iduse, smatrix, xfmatrix] = lk_cluster(mxin, pixs, scl, 
             
             %%% compute connected subgraph components %%%
             aa = smatrix < pixthres;
-            aa = xor(aa, diag(ones(1, n)));
+%             aa = xor(aa, diag(ones(1, n)));
+            aa(diag(ones(1, n)) > 0) = false;
 %             aa = smatrix < 0.8;
             sgraph = graph(aa, 'upper');
             names = get_node_name(1: n);
