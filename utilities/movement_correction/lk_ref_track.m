@@ -34,7 +34,7 @@ function [PN, imgo, scr] = lk_ref_track(Y, imref, maskc)
         
         if sqrt(PN(1, i) ^ 2 + PN(2, i) ^ 2) > 4 * scr(i)
             PN(:, i) = p0;
-            imgo = imcur;
+            imgo(:, :, i) = imcur;
         end
     end
 end
