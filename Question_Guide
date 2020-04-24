@@ -1,0 +1,11 @@
+For anyone asking a specific question regarding the performance of MIN1PIPE, here are some quick tips (requirements) if you really want to understand the reason/cause of issues:
+
+1. Please provide the parameters you used for the run. No algorithm can do everything with zero parameter, and why parameters exist is because they affect performance. It is meaningless (thus a waste of both our time) to talk about performance without providing parameters.
+
+2. Please provide the basic details of your video, i.e. pixel resolution, length etc. The validity of the parameters depends on them.
+
+3. Reemphasize the importance of 1. Please be aware that you might choose the wrong parameters and thus be cautious when you try to acribe the issue to MIN1PIPE.
+
+4. Please be polite. In the open source community, no one should be forced to do anything.
+
+5. TBA
