@@ -167,6 +167,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             
             %% refine sig again %%
             Puse.p = 2; %%% 2nd ar model used %%%
+            Puse.options.p = 2;
             [sigfn, bgffn, ~, spkfn] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
             sigfn = max(roifn, [], 1)' .* sigfn;
             roifn = roifn ./ max(roifn, [], 1);
