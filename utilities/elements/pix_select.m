@@ -86,7 +86,8 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     toc(hpix)
     
     %% coarse seeds refinement: GMM %%
-    mx = proj1 .* mask .* maskc;
+%     mx = proj1 .* mask .* maskc;
+    mx = proj1;
     mxs = find(reshape(mx, pixh * pixw, 1));
     datause = zeros(length(mxs), nf);
     stype = parse_type(class(m.reg(1, 1, 1)));
@@ -176,6 +177,15 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     
     %% seeds correlating %%   
     [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(maxall, iduse, datuse, datasmth, cutoff, pkcutoff, sz, corrthres);
+    
+    %% seeds clean %%
+    maskall = mask .* maskc;
+    idinmask = maskall(idusef) > 0;
+    idusef = idusef(idinmask);
+    datasmthf = datasmthf(idinmask, :);
+    datusef = datusef(idinmask, :);
+    cutofff = cutofff(idinmask);
+    pkcutofff = pkcutofff(idinmask);
         
     %% rnn classifier %%
 %     idend = find(pathname == filesep, 2, 'last');

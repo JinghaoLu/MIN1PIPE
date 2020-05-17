@@ -1,4 +1,4 @@
-function [path_name, file_base, file_fmt] = data_info(file_name_tmp, path_name)
+function [path_name, file_base, file_fmt] = data_info_HPC(file_name_tmp, path_name)
 % Select datasets to process
 %   Jinghao Lu 01/12/2016
 

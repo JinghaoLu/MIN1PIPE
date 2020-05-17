@@ -171,7 +171,8 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             [sigfn, bgffn, ~, spkfn] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
             sigfn = max(roifn, [], 1)' .* sigfn;
             roifn = roifn ./ max(roifn, [], 1);
-            dff = sigfn ./ mean(sigfn, 2);
+%             dff = sigfn ./ mean(sigfn, 2);
+            dff = sigfn ./ mean(bgffn);
             
             %% save data %%
             stype = parse_type(class(m.reg(1, 1, 1)));
