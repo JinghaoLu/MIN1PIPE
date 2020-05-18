@@ -92,7 +92,8 @@ function [m_out] = noise_suppress(m_in, maxall)
     
     imax = max(imax(:));
     imin = min(imin(:));
-    m_out = normalize_batch(m_in.Properties.Source, 'reg', imax, imin, idbatch);
+    ip = 2;
+    m_out = normalize_batch(m_in.Properties.Source, 'reg', imax, imin, idbatch, ip);
     
     %%% smooth %%%
     ebatch = ceil(nf / nbatch);
