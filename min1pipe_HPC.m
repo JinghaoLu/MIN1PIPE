@@ -86,13 +86,18 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
             spatialr = Params.spatialr;
             [m, filename_raw, imaxn, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
             
-            %% get rough roi domain %%
-            mask = roi_domain(imeanf);
-            
             %% neural enhancing batch version %%
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
             [m, imaxy, overwrite_flag] = neural_enhance(m, filename_reg, Params);
             
+            %% neural enhancing postprocess %%
+            if overwrite_flag
+                m = noise_suppress(m, imaxy);
+            end
+            
+            %% get rough roi domain %%
+            mask = dominant_patch(imaxy);
+
             %% frame register %%
             if ismc && overwrite_flag
                 pixs = min(pixh, pixw);
