@@ -1,4 +1,4 @@
-function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, Aold, iduse, noise, datasmthf, cutofff, pkcutofff, ispara)
+function [A, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, Aold, iduse, noise, datasmthf, cutofff, pkcutofff, ispara)
 % [A, b, C, iduse] = refine_roi refine roi by basis pursuit denoising
 %   modified from E Pnevmatikakis
 %   Jinghao Lu 06/10/2016
@@ -31,15 +31,16 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
     disp(['Done init, use ', num2str(time), ' seconds'])
     
     %% BPDN main %%
+    tstep = 10;
     A = zeros(d, nroi);
     ind2use = find(sum(sarea, 2));
-%     [h, w] = ind2sub([d1, d2], ind2use);
+    [h, w] = ind2sub([d1, d2], ind2use);
     npx = length(ind2use);
     ind = cell(1, npx);
     Cuse = cell(1, npx);
     for i = 1: npx
         ind{i} = find(sarea(ind2use(i), :));
-        Cuse{i} = [C(ind{i}, :); f];
+        Cuse{i} = [C(ind{i}, 1: tstep: end); f(1: tstep: end)];
     end
     
     nsize = d * d3 * 8; %%% size of double %%%
@@ -50,14 +51,14 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
     nbatch = length(idbatch) - 1;
 
     %%% prepare for parallel %%%
-    At = A(ind2use, :);
+    At = A (ind2use, :);
     noiset = noise(ind2use);
     indcount = 0;
     
     if ispara
         for j = 1: nbatch
-            datat = m.reg(1: d1, idbatch(j): idbatch(j + 1) - 1, 1: d3);
-            datat = reshape(datat, d1 * (idbatch(j + 1) - idbatch(j)), d3);
+            datat = m.reg(1: d1, idbatch(j): idbatch(j + 1) - 1, 1: tstep: d3);
+            datat = reshape(datat, d1 * (idbatch(j + 1) - idbatch(j)), []);
             idt = ind2use > d1 * (idbatch(j) - 1) & ind2use <= d1 * (idbatch(j + 1) - 1);
             idt = ind2use(idt) - d1 * (idbatch(j) - 1);
             datat = double(datat(idt, :));
@@ -80,7 +81,7 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
         end
     else
         for i = 1: npx   % estimate spatial components
-            [~, ~, a, ~, ~] = lars_regression_noise(squeeze(double(m.reg(h(i), w(i), 1: d3))), Cuse{i}', 1, noiset(i) ^ 2 * d3);
+            [~, ~, a, ~, ~] = lars_regression_noise(squeeze(double(m.reg(h(i), w(i), 1: tstep: d3))), Cuse{i}', 1, noiset(i) ^ 2 * d3);
             tmp = At(i, :);
             tmp(ind{i}) = a(1: max(1, end - 1))';
             At(i, :) = tmp;
@@ -103,11 +104,15 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
     %% Postprocessing %%
     %%% medfilt2 %%%
     mfwin = [3, 3];
+    mx = max(A, [], 1);
     Atmp = reshape(full(A), d1, d2, nseed);
     for i = 1: nseed
         Atmp(:, :, i) = medfilt2(Atmp(:, :, i), mfwin);
     end
     Atmp = reshape(Atmp, d, nseed);
+    mxn = max(Atmp, [], 1);
+    Atmp = Atmp .* (mx ./ mxn);
+    Atmp(isnan(Atmp)) = 0;
     
     %%% energy select %%%
     ecut = 0.2;
@@ -136,7 +141,7 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
     A = Atmp3;
     
     %%% delete empty cell %%%
-    inddel = find(sum(A) == 0);
+    inddel = union(find(sum(A, 1) == 0), find(sum(C, 2) == 0));
     A = A(:, setdiff(1: nseed, inddel));
     C = C(setdiff(1: nseed, inddel), :);
     datasmthf = datasmthf(setdiff(1: nseed, inddel), :);
@@ -145,11 +150,18 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
     iduse = iduse(setdiff(1: nseed, inddel));
             
     %%% final smooth of roi %%%
-    nseed = length(iduse);
-    for i = 1: nseed
-        tmp = reshape(A(:, i), d1, d2);
-        A(:, i) = reshape(imgaussfilt(tmp, 2), d, 1);
-    end
+    At = reshape(A, d1, d2, []);
+    mx = max(A, [], 1);
+    At = imgaussfilt(At, 2);
+%     At = reshape(At, d, []);
+%     x = zeros(size(At, 2), 1);
+%     for i = 1: size(At, 2)
+%         x(i) = At(:, i) \ A(:, i);
+%     end
+    At = reshape(At, d1 * d2, []);
+    mxn = max(At, [], 1);
+    A = At .* (mx ./ mxn);
+%     A = At .* x';
     
     %%% retain only main hill %%%
     for i = 1: length(iduse)
@@ -169,7 +181,8 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
                 ltmp = improfile(dt, [x; xmax(j)], [y; ymax(j)]);
                 vmint(j) = min(ltmp);
             end
-            vmin = min(vmint);
+%             vmin = min(vmint);
+            vmin = max(vmint);
             
             %%% get main hill %%%
             dtb = dt > vmin;
@@ -179,26 +192,32 @@ function [A, b, C, iduse, datasmthf, cutofff, pkcutofff] = refine_roi(m, C, f, A
             dtuse = imgaussfilt(dtuse, 2);
             A(:, i) = dtuse(:);
         end
+        rmax = imregionalmax(dt);
+        idt = find(rmax);
+        tmp = dt(:);
+        itst = tmp(idt);
+        [~, idd] = max(itst);
+        iduse(i) = idt(idd);
     end
     
     time = toc(hroi);
     disp(['Done postprocessing, use ', num2str(time), ' seconds'])
 
-    %% background update %%
-    nsize = d * d3 * 8; %%% size of double %%%
-    nbatch = batch_compute(nsize);
-    ebatch = ceil(d / nbatch);
-    eb = floor(ebatch / d1);
-    idbatch = [1: eb: d2, d2 + 1];
-    nbatch = length(idbatch) - 1;
-    
-    b = zeros(d, 1);
-    for i = 1: nbatch
-        tmp = m.reg(1: d1, idbatch(i): idbatch(i + 1) - 1, 1: d3);
-        tmp = double(reshape(tmp, d1 * (idbatch(i + 1) - idbatch(i)), d3));
-        Yf = tmp * f';
-        b(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1)) = max((Yf - A(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1), :) * (C * f')) / (f * f'), 0);
-    end
+%     %% background update %%
+%     nsize = d * d3 * 8; %%% size of double %%%
+%     nbatch = batch_compute(nsize);
+%     ebatch = ceil(d / nbatch);
+%     eb = floor(ebatch / d1);
+%     idbatch = [1: eb: d2, d2 + 1];
+%     nbatch = length(idbatch) - 1;
+%     
+%     b = zeros(d, 1);
+%     for i = 1: nbatch
+%         tmp = m.reg(1: d1, idbatch(i): idbatch(i + 1) - 1, 1: d3);
+%         tmp = double(reshape(tmp, d1 * (idbatch(i + 1) - idbatch(i)), d3));
+%         Yf = tmp * f';
+%         b(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1)) = max((Yf - A(d1 * (idbatch(i) - 1) + 1: d1 * (idbatch(i + 1) - 1), :) * (C * f')) / (f * f'), 0);
+%     end
     time = toc(hroi);
     disp(['Done refine roi, total time: ', num2str(time), ' seconds'])
 end

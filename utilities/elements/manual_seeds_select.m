@@ -129,18 +129,20 @@ function [roi, sig, idusef, bg, bgf, datasmthf, cutofff, pkcutofff] = manual_see
             disp(['Done #', num2str(i), '/', num2str(nseed)])
         end
     end
-    
+        
     %%% get background roi and sig %%%
     %%% compute residual spatial & temporal %%%
-    roiid = find(max(roi, [], 2) > 0);
-    tominus = zeros(1, nf);
-    for i = 1: length(roiid)
-        tmp = roi(roiid(i), :);
-        idt = tmp > 0;
-        tominus = tominus + max(tmp(idt)' .* sig(idt, :), [], 1);
-    end
-    bgf = (imeantf * pixh * pixw - tominus) / (pixh * pixw);
-    bg = (reshape(imeanf * nf, pixh * pixw, 1) - max(roi .* sum(sig, 2)', [], 2)) / nf;
+%     roiid = find(max(roi, [], 2) > 0);
+%     tominus = zeros(1, nf);
+%     for i = 1: length(roiid)
+%         tmp = roi(roiid(i), :);
+%         idt = tmp > 0;
+%         tominus = tominus + max(tmp(idt)' .* sig(idt, :), [], 1);
+%     end
+%     bgf = (imeantf * pixh * pixw - tominus) / (pixh * pixw);
+%     bg = (reshape(imeanf * nf, pixh * pixw, 1) - max(roi .* sum(sig, 2)', [], 2)) / nf;
+    bgf = zeros(1, nf);
+    bg = zeros(pixh * pixw, 1);
 
     disp('Done manual pix select')
 end

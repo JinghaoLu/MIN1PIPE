@@ -3,7 +3,7 @@ function [O,lo] = update_order(A)
     K = size(A,2);
     F = (A'*A>0);       % find overlapping components
     F(1:K+1:K^2) = 0;   % remove diagonal elements
-    rem_ind = 1:K;      % remaining indeces
+    rem_ind = 1:K;      % remaining indices
 
     dp = 0;
     while ~isempty(rem_ind);

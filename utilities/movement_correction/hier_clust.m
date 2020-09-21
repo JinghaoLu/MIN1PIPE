@@ -36,7 +36,13 @@ function [stt, stp, flag, scl, mc_flag] = hier_clust(acorr, Fs, pixs, scl, stype
     if threst1 > threst
         thres = thres1;
     else
-        thres = threst; %%% no more than scl (percentage) of the image size %%%
+        [tmp, xi] = ksdensity(acorr, linspace(min(acorr), max(acorr), 200));
+        [~, idt] = max(tmp);
+        if idt < 80
+            thres = min(threst, xi(round(2.5 * idt))); %%% no more than scl (percentage) of the image size %%%
+        else
+            thres = threst;
+        end
     end
     scl = thres / pixs; %%% update new scl %%%
     ids = acorr > thres;
@@ -50,7 +56,7 @@ function [stt, stp, flag, scl, mc_flag] = hier_clust(acorr, Fs, pixs, scl, stype
         stp(i) = find(l == i, 1, 'last') + 1;
     end
     
-    if length(stt) == 1
+    if length(stt) == 1 && stt(1) == 1 && stp(1) == length(acorr) + 1
         mc_flag = false;
     end
     

@@ -35,7 +35,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     [pixh, pixw, nf] = size(m, 'reg');
     
     %%% random frames median-max projection %%%
-    niter = 10; 
+    niter = 50; 
     nselmax = 500; %%% each time only a small portion is collected %%%
     nsel = min(floor(nf / niter), nselmax);
     stype = parse_type(class(m.reg(1, 1, 1)));
@@ -46,18 +46,26 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     nbatch = length(idbatch) - 1;
     mxmx = zeros(pixh, pixw, niter);
     maxall = zeros(pixh, pixw);
+    minall = zeros(pixh, pixw);
     imeantf = zeros(1, nf);
     imeanf = zeros(pixh, pixw);
     for i = 1: niter
         istt = (i - 1) * nsel;
         maxt = zeros(pixh, pixw);
+        mint = zeros(pixh, pixw);
         for j = 1: nbatch
             tmp = m.reg(1: pixh, 1: pixw, istt + idbatch(j): istt + idbatch(j + 1) - 1);
-            maxt = max(max(tmp, [], 3), maxt);
+%             tmp = imgaussfilt(tmp, 1);
+            tmpmax = max(tmp, [], 3);
+            tmpmin = min(tmp, [], 3);
+            maxt = max(tmpmax, maxt);
+            mint = min(tmpmin, mint);
             maxall = max(maxall, maxt);
+            minall = min(minall, mint);
             imeanf = (imeanf * (istt + idbatch(j) - idbatch(1)) + sum(tmp, 3)) / (istt + idbatch(j + 1) - idbatch(1));
             imeantf(istt + idbatch(j): istt + idbatch(j + 1) - 1) = mean(reshape(tmp, pixh * pixw, idbatch(j + 1) - idbatch(j)), 1);
         end
+        maxt = imgaussfilt(imtophat(maxt, strel('disk', 4)), 0.5);
         mxmx(:, :, i) = imregionalmax(maxt);
 %         disp(num2str(i))
     end
@@ -72,6 +80,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
         for i = 1: nbatch
             tmp = m.reg(1: pixh, 1: pixw, nsel * niter + idbatch(i): nsel * niter + idbatch(i + 1) - 1);
             maxall = double(max(max(tmp, [], 3), maxall));
+            minall = double(max(max(tmp, [], 3), minall));
             imeanf = (imeanf * (nsel * niter + idbatch(i) - idbatch(1)) + double(sum(tmp, 3))) / (nsel * niter + idbatch(i + 1) - idbatch(1));
             imeantf(nsel * niter + idbatch(i): nsel * niter + idbatch(i + 1) - 1) = double(mean(reshape(tmp, pixh * pixw, idbatch(i + 1) - idbatch(i)), 1));
         end
@@ -107,11 +116,12 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     dtmx = prctile(datause', 99.9)';
     dtmn = prctile(datause', 0.1)';
     scmn = dtmx - dtmn;
+    maxmin = maxall - minall;
     G = fitgmdist(scmn, 2);
     [~, iuse] = max(G.mu);
     scall = posterior(G, scmn);
     idxuse2 = scall(:, iuse) > 0.5;
-    idxuse3 = scmn > intensity_filter(maxall);
+    idxuse3 = scmn > intensity_filter(maxmin(mxs));
     mxuse = mxs(idxuse2 & idxuse3);
     datause2 = datause(idxuse2 & idxuse3, :);
     time = toc(hpix);
@@ -209,63 +219,97 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     sig = zeros(nseed, nf);
     swin = 2 * sz;
     cthres = 0.9; %%% a high enough value for pixel clustering as initialization, not very important %%%
-        
-    for i = 1: nseed
-        %%% get the current seed position %%%
-        [x, y] = ind2sub([pixh, pixw], idusef(i));
-        
-        %%% prepare small patch of data around the seed %%%
-        rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
-        lsml = prod(diff(rg, 1, 2) + 1);
-        ctr = [x - rg(1, 1) + 1, y - rg(2, 1) + 1];
-        sa = m.reg(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), 1: nf);
-                
-        %%% pixel correlation %%%
-        tuset = vld_prd_slct(datasmthf(i, :), cutofff(i), pkcutofff(i));
-        tuse = false(1, nf);
-        tuse(round(gsw / 2): round(gsw / 2) + length(tuset) - 1) = tuset;
+    [~, idsort] = sort(idusef);
+    idusef = idusef(idsort);
+    datasmthf = datasmthf(idsort, :);
+    datusef = datusef(idsort, :);
+    cutofff = cutofff(idsort);
+    pkcutofff = pkcutofff(idsort);    
+    
+    [d1, d2, T] = size(m, 'reg');
+    nsize = d1 * d2 * T * 8 * 2; %%% size of double %%%
+    nbatch = batch_compute(nsize);
+    ebatch = ceil(d2 / nbatch);
+    idbatch = [1: ebatch: d2, d2 + 1];
+    nbatch = length(idbatch) - 1;
+    bps = linspace(idusef(1), idusef(end), nbatch + 1);
+    offset = 0;
 
-        %%% coarse spatial init %%%
-        saa = reshape(sa, lsml, nf);
-        daa = saa(:, tuse);
-        datt = datusef(i, :);
-        dat = datt(tuse);
-        ind = corr(daa', dat') > cthres;
-        ind = reshape(ind, diff(rg(1, :)) + 1, diff(rg(2, :)) + 1);
-        [l, ~] = bwlabeln(ind);
-        ii = l(ctr(1), ctr(2));
-        msk = l == ii;
-        data = bsxfun(@times, sa, msk);
+    for ib = 1: nbatch
+        idcurr = idusef(idusef >= bps(ib) & idusef <= bps(ib + 1));
+        [~, wmin] = ind2sub([d1, d2], idcurr(1));
+        wmin = max(1, wmin - swin);
+        [~, wmax] = ind2sub([d1, d2], idcurr(end));
+        wmax = min(d2, wmax + swin);
+        rtmp = m.reg(1: d1, wmin: wmax, 1: nf);
         
-        %%% get temporal and (spatial) init; previous method faster %%%
-        [atmp, ctmp] = init_roi(data(:, :, tuse), dat');
-        
-        %%% rescale the atmp and ctmp %%%
-        rt = max(dat) / max(ctmp);
-        ctmp = datusef(i, :) / rt;
-        
-        %%% update rois and sigs %%%
-        tmp  = zeros(pixh, pixw);
-        tmp(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2)) = atmp;
-        roi(:, i) = reshape(tmp, pixh * pixw, 1);
-        sig(i, :) = ctmp;
-
-        if mod(i, round(nseed / 10)) == 0
-            disp(['Done #', num2str(i), '/', num2str(nseed)])
+        for i = 1: length(idcurr)
+            %%% get the current seed position %%%
+            [x, y] = ind2sub([pixh, pixw], idcurr(i));
+            y = y - wmin + 1;
+            
+            rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
+            lsml = prod(diff(rg, 1, 2) + 1);
+            ctr = [x - rg(1, 1) + 1, y - rg(2, 1) + 1];
+            sa = rtmp(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), 1: nf);
+            
+            %%% pixel correlation %%%
+            tuset = vld_prd_slct(datasmthf(i, :), cutofff(i), pkcutofff(i));
+            tuse = false(1, nf);
+            tuse(round(gsw / 2): round(gsw / 2) + length(tuset) - 1) = tuset;
+            
+            %%% coarse spatial init %%%
+            saa = reshape(sa, [], nf);
+            daa = saa(:, tuse);
+            datt = datusef(i + offset, :);
+            dat = datt(tuse);
+            ind = corr(daa', dat') > cthres;
+            ind = reshape(ind, diff(rg(1, :)) + 1, diff(rg(2, :)) + 1);
+            [l, ~] = bwlabeln(ind);
+            ii = l(ctr(1), ctr(2));
+            msk = l == ii;
+            data = bsxfun(@times, sa, msk);
+            
+            %%% get temporal and (spatial) init; previous method faster %%%
+            [atmp, ctmp] = init_roi(data(:, :, tuse), dat');
+%             [atmp, ctmp] = init_roi(data, datt');
+%             atmp = data;
+%             ctmp = datt;
+            
+            %%% rescale the atmp and ctmp %%%
+            rt = max(dat) / max(ctmp);
+            ctmp = datusef(i + offset, :) / rt;
+            
+            %%% update rois and sigs %%%
+            y = y + wmin - 1;
+            rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
+            tmp  = zeros(pixh, pixw);
+            tmp(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2)) = atmp;
+            roi(:, i + offset) = reshape(tmp, pixh * pixw, 1);
+            sig(i + offset, :) = ctmp;
+            
+            if mod(i, round(nseed / 10)) == 0
+                disp(['Done #', num2str(i), '/', num2str(nseed)])
+            end
         end
+        offset = offset + length(idcurr);
     end
     
     %%% get background roi and sig %%%
     %%% compute residual spatial & temporal %%%
-    roiid = find(max(roi, [], 2) > 0);
-    tominus = zeros(1, nf);
-    for i = 1: length(roiid)
-        tmp = roi(roiid(i), :);
-        idt = tmp > 0;
-        tominus = tominus + max(tmp(idt)' .* sig(idt, :), [], 1);
-    end
-    bgf = (imeantf * pixh * pixw - tominus) / (pixh * pixw);
-    bg = (reshape(imeanf * nf, pixh * pixw, 1) - max(roi .* sum(sig, 2)', [], 2)) / nf;
+%     tominus = sum(roi * sig, 1);
+%     roiid = find(max(roi, [], 2) > 0);
+%     tominus = zeros(1, nf);
+%     for i = 1: length(roiid)
+%         tmp = roi(roiid(i), :);
+%         idt = tmp > 0;
+%         tominus = tominus + max(tmp(idt)' .* sig(idt, :), [], 1);
+%     end
+    bgf = zeros(1, nf);
+%     bgf = (imeantf * pixh * pixw - tominus) / (pixh * pixw);
+    bg = zeros(pixh, pixw);
+%     bg = (reshape(imeanf * nf, pixh * pixw, 1) - tominus) / nf;
+%     bg = (reshape(imeanf * nf, pixh * pixw, 1) - max(roi .* sum(sig, 2)', [], 2)) / nf;
     
     time = toc(hpix);
     disp(['Done pix select, time: ', num2str(time), ' seconds'])

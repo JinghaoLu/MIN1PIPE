@@ -6,7 +6,8 @@ function iduset = seeds_merge_unit(conmtx, imax, iduse)
     %% build image graph %%
     %%% initialize image graph %%%
     img = imax;
-    img = imgaussfilt(img, 1);
+    img = imgaussfilt(img, 0.2);
+    img = imtophat(img, strel('disk', 5));
     imgt = 1- normalize(img);
     [pixh, pixw] = size(img);
     g = imageGraph([pixh, pixw], 8);

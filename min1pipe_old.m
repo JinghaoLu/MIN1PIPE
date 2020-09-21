@@ -81,17 +81,17 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             Fsi = Params.Fsi;
             Fsi_new = Params.Fsi_new;
             spatialr = Params.spatialr;
-            [m, filename_raw, imaxn, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
+            [m, filename_raw, imaxn, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
             
             %% neural enhancing batch version %%
             %%% --------- 2nd section ---------- %%%
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
-            [m, imaxy1, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhance(m, filename_reg, Params);
+            [m, imaxy, overwrite_flag] = neural_enhance(m, filename_reg, Params);
             
             %% neural enhancing postprocess %%
             if overwrite_flag
                 nflag = 1;
-                m = noise_suppress(m, imaxy1, Fsi_new, nflag);
+                m = noise_suppress(m, imaxy, Fsi_new, nflag);
             end
             
             %% movement correction %%
@@ -105,19 +105,21 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
                     sigma_f = Params.mc_sigma_f;
                     sigma_d = Params.mc_sigma_d;
                     se = Params.neuron_size;
-                    [m, corr_score, raw_score, scl, imaxy] = frame_reg(m, imaxy1, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+                    [m, corr_score, raw_score, scl] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
                     Params.mc_scl = scl; %%% update latest scl %%%
                     
-%                     file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
-%                     if exist(file_name_to_save, 'file')
-%                         delete(file_name_to_save)
-%                     end
-                    save(m.Properties.Source, 'corr_score', 'raw_score', '-v7.3', '-append');
+                    file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
+                    if exist(file_name_to_save, 'file')
+                        delete(file_name_to_save)
+                    end
+                    save(file_name_to_save, 'corr_score', 'raw_score', '-v7.3');
                 else
                     %%% spatiotemporal stabilization %%%
                     m = frame_stab(m);
                 end
             end
+            
+            time1 = toc(hpipe);
             
             %% movement correction postprocess %%
             %%% --------- 3rd section ---------- %%%
@@ -129,42 +131,61 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             mask = dominant_patch(imaxy);
             
             %% parameter init %%
+            hpipe = tic;
             [P, options] = par_init(m);
             
             %% select pixel %%
-            [sigrf, roirf, seedsupdt, bgrf, bgfrf, datasmthf1, cutofff1, pkcutofff1] = iter_seeds_select(m, mask, Params, P, options, flag);
+            if flag == 1
+                sz = Params.neuron_size;
+                Fsi_new = Params.Fsi_new;
+                sigthres = Params.pix_select_sigthres;
+                corrthres = Params.pix_select_corrthres;
+                [roi, sig, bg, bgf, seeds, datasmth0, cutoff0, pkcutoff0] = pix_select(m, mask, sz, Fsi_new, sigthres, corrthres);
+                time1 = toc(hpipe);
+            else
+                sz = Params.neuron_size;
+                Fsi_new = Params.Fsi_new;
+                [roi, sig, seeds, bg, bgf, datasmth0, cutoff0, pkcutoff0] = manual_seeds_select(m, Fsi_new, sz);
+            end
+            
+            %% refine roi %%
+            noise = P.sn;
+            ispara = Params.refine_roi_ispara;
+            [roirf, bgr, sigupdt, seedsupdt, datasmthf1, cutofff1, pkcutofff1] = refine_roi(m, sig, bgf, roi, seeds, noise, datasmth0, cutoff0, pkcutoff0, ispara);
+            
+            %% refine sig %%
+            p = 0; %%% no ar model used %%%
+            [sigrf, bgrf, Puse] = refine_sig(m, roirf, bgr, sigupdt, bgf, p, options);
             
             %% merge roi %%
             corrthres = Params.merge_roi_corrthres;
-            [roimrg, sigmrg, seedsmrg, datasmthf2, cutofff2, pkcutofff2] = merge_roi(m, roirf, sigrf, seedsupdt, imaxy, datasmthf1, cutofff1, pkcutofff1, corrthres);
-    
-%             %% 2nd step clean seeds %%
-%             sz = Params.neuron_size;
-%             [roic, sigc, seedsc, datasmthc, cutoffc, pkcutoffc] = final_seeds_select(m, roimrg, sigmrg, seedsmrg, datasmthf2, cutofff2, pkcutofff2, sz, imax);
+            [roimrg, sigmrg, seedsmrg, datasmthf2, cutofff2, pkcutofff2] = merge_roi(m, roirf, sigrf, seedsupdt, datasmthf1, cutofff1, pkcutofff1, corrthres);
             
             %% refine roi again %%
-            noise = P.sn;
             Puse.p = 0;
             Puse.options = options;
             Puse.noise = noise;
             ispara = Params.refine_roi_ispara;
-            [roifn1, sigfn1, seedsfn1, datasmthfn1, cutofffn1, pkcutofffn1] = refine_roi(m, sigmrg, bgfrf, roimrg, seedsmrg, Puse.noise, datasmthf2, cutofff2, pkcutofff2, ispara);
-            [bgfn, bgffn] = bg_update(m, roifn1, sigfn1);
-                         
+            [roifn, bgfn, sigupdt2, seedsfn] = refine_roi(m, sigmrg, bgrf, roimrg, seedsmrg, Puse.noise, datasmthf2, cutofff2, pkcutofff2, ispara);
+            
+            %% refine sig again for raw sig %%
+            Puse.p = 0; %%% 0 ar model used %%%
+            [sigfnr, ~, ~] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
+            sigfnr = max(roifn, [], 1)' .* sigfnr;
+            roifnr = roifn ./ max(roifn, [], 1);
+            
             %% refine sig again %%
             Puse.p = 2; %%% 2nd ar model used %%%
             Puse.options.p = 2;
-            Puse.options.temporal_iter = 1;
-            [sigfn1, bgffn, roifn1, seedsfn1, datasmthfn1, cutofffn1, pkcutofffn1] = refine_sig(m, roifn1, bgfn, sigfn1, bgffn, seedsfn1, datasmthfn1, cutofffn1, pkcutofffn1, Puse.p, Puse.options);
-                        
-            %% final clean seeds %%
-            sz = Params.neuron_size;
-            [roifn, sigfn, seedsfn, datasmthfn, cutofffn, pkcutofffn] = final_seeds_select(m, roifn1, sigfn1, seedsfn1, datasmthfn1, cutofffn1, pkcutofffn1, sz, imaxy);
-
+            [sigfn, bgffn, ~, spkfn] = refine_sig(m, roifn, bgfn, sigupdt2, bgf, Puse.p, Puse.options);
+            
             %% final trace clean %%
             tflag = 2;
             sigfn = trace_clean(sigfn, Fsi_new, tflag);
-                        
+            
+            %% final seeds refining %%
+            
+            
             %% final refine sig %%
             [sigfn, spkfn] = pure_refine_sig(sigfn, Puse.options);
             
@@ -172,23 +193,8 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             sigfn = max(roifn, [], 1)' .* sigfn;
             roifn = roifn ./ max(roifn, [], 1);
 %             dff = compute_dff(sigfn, bgfn, bgffn, seedsfn);
-
-            %%% estimate df/f %%%
-            imcur = imaxy1;
-            imref = imaxy;
-            [img, sx, sy] = logdemons_unit(imref, imcur);
-            ibuse = ibmax - ibmin;
-            for ii = 1: length(sx)
-                ibuse = iminterpolate(ibuse, sx{ii}, sy{ii});
-            end
-            
-            x = (imx1 - imn1) * (imx2 - imn2) + imn1;
-            roifnt = roifn;
-            roifnt = roifnt ./ sum(roifnt, 1);
-            bguse1 = ibuse(:)' * roifnt;
-            bguse2 = min(sigfn, [], 2) * x;
-            bguse = bguse1(:) * (imx1 - imn1) + bguse2(:);
-            dff = double(full((sigfn - min(sigfn, [], 2)) * x ./ bguse));
+            dff = sigfn ./ mean(sigfn, 2);
+%             dff = sigfn ./ (mean(bgffn) * bgfn(seedsfn) + mean(sigfn, 2));
             
             %% save data %%
             stype = parse_type(class(m.reg(1, 1, 1)));
@@ -205,33 +211,28 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             
             file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
             if exist(file_name_to_save, 'file')
-%                 if ismc
-%                     load(file_name_to_save, 'raw_score', 'corr_score')
-%                 end
+                if ismc
+                    load(file_name_to_save, 'raw_score', 'corr_score')
+                end
                 delete(file_name_to_save)
             end
             
             if ismc
-                try
-                    load(m.Properties.Source, 'raw_score', 'corr_score')
-                    save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params', '-v7.3');
-                catch
-                    save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
-                end
+                save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'corr_score', 'raw_score', 'Params', '-v7.3');
             else
-                save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
+                save(file_name_to_save, 'roifn', 'sigfn', 'dff', 'seedsfn', 'spkfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'Params', '-v7.3');
             end
             
-            save(file_name_to_save, 'imaxn', 'imaxy', 'imeanf', '-append');
-            time1 = toc(hpipe);
-            disp(['Done all, total time: ', num2str(time1), ' seconds'])
+            save(file_name_to_save, 'imaxn', 'imaxy', '-append');
+            time2 = toc(hpipe);
+            disp(['Done all, total time: ', num2str(time1 + time2), ' seconds'])
         else
             filename_raw = [path_name, file_base{i}, '_frame_all.mat'];
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
             file_name_to_save = filecur;
             
-            time1 = toc(hpipe);
-            disp(['Done all, total time: ', num2str(time1), ' seconds'])
+            time2 = toc(hpipe);
+            disp(['Done all, total time: ', num2str(time2), ' seconds'])
         end
     end
 end

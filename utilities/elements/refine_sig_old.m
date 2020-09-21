@@ -1,4 +1,4 @@
-function [C, f, A, seeds, datasmth, cutoff, pkcutoff, Pnew, S, YrA] = refine_sig(m, A, b, Cin, fin, seeds, datasmth, cutoff, pkcutoff, p, options)
+function [C, f, Pnew, S, YrA] = refine_sig(m, A, b, Cin, fin, p, options)
 % [C, f, Pnew, S, YrA] = refine_sig refine signal by CNMF
 %   modified from E Pnevmatikakis
 %   Jinghao Lu 06/10/2016
@@ -12,6 +12,14 @@ function [C, f, A, seeds, datasmth, cutoff, pkcutoff, Pnew, S, YrA] = refine_sig
         ITER = options.temporal_iter; 
     end           % number of block-coordinate descent iterations
     
+    if ~isfield(options,'bas_nonneg')
+        options.bas_nonneg = defoptions.bas_nonneg; 
+    end
+    
+    if ~isfield(options,'fudge_factor')
+        options.fudge_factor = defoptions.fudge_factor;
+    end
+    
     if ~isfield(options,'temporal_parallel')
         options.temporal_parallel = defoptions.temporal_parallel; 
     end
@@ -22,40 +30,23 @@ function [C, f, A, seeds, datasmth, cutoff, pkcutoff, Pnew, S, YrA] = refine_sig
     S = zeros(size(Cin));
     Cin = [Cin; fin];
     C = Cin;
-    AA = (A' * A) ./ sum(A, 1);
+    nA = sum(A .^ 2);
+    AA = (A' * A) / spdiags(nA(:), 0, length(nA), length(nA));
     
-    nsize = d1 * d2 * T * 8 * 2; %%% size of double %%%
+    nsize = d1 * d2 * T * 8; %%% size of double %%%
     nbatch = batch_compute(nsize);
     ebatch = ceil(T / nbatch);
     idbatch = [1: ebatch: T, T + 1];
     nbatch = length(idbatch) - 1;
-    YrA = zeros(T, K + 1);
-    for ib = 1: nbatch
-        idtmp = idbatch(ib): idbatch(ib + 1) - 1;
-        ytmp = m.reg(1: d1, 1: d2, idtmp);
-        ytmp = reshape(ytmp, d1 * d2, []);
-        tominus = A * Cin(:, idtmp);
-%         tominus = zeros(d1 * d2, size(ytmp, 2));
-%         for i = 1: K
-%             cid = A(:, i) > 0;
-%             ctmp = A(cid, i) * Cin(i, idtmp);
-%             tominus(cid, :) = max(tominus(cid, :), ctmp);
-%             disp(num2str(i))
-%         end
-%         tominus = tominus + b * fin(idtmp);
-        yrt = ytmp - tominus;
-        YrA(idtmp, :) = yrt' * A ./ sum(A, 1);
+
+    yat = zeros(T, size(A, 2));
+    for i = 1: nbatch
+        tmp = m.reg(1: d1, 1: d2, idbatch(i): idbatch(i + 1) - 1);
+        tmp = double(reshape(tmp, d1 * d2, (idbatch(i + 1) - idbatch(i))));
+        yat(idbatch(i): idbatch(i + 1) - 1, :) = tmp' * A;
     end
-    
-%     yat = zeros(T, size(A, 2));
-%     for i = 1: nbatch
-%         tmp = m.reg(1: d1, 1: d2, idbatch(i): idbatch(i + 1) - 1);
-%         tmp = double(reshape(tmp, d1 * d2, (idbatch(i + 1) - idbatch(i))));
-%         yat(idbatch(i): idbatch(i + 1) - 1, :) = tmp' * A;
-%     end
-%     YA = yat / spdiags(nA(:), 0, length(nA), length(nA));
-%     YrA = (YA - Cin' * AA);
-    
+    YA = yat / spdiags(nA(:), 0, length(nA), length(nA));
+    YrA = (YA - Cin' * AA);
     Pnew.gn = cell(K, 1);
     Pnew.b = cell(K, 1);
     Pnew.c1 = cell(K, 1);
@@ -99,7 +90,6 @@ function [C, f, A, seeds, datasmth, cutoff, pkcutoff, Pnew, S, YrA] = refine_sig
                     for jj = 1:length(O{jo})
                         Pnew.gn(O{jo}(jj)) = gtemp(jj);
                     end
-%                     YrA = YrA - (Ctemp - C(O{jo}(:), :))' * AA(O{jo}(:), :);
                     YrA = YrA - (Ctemp - C(O{jo}(:), :))' * AA(O{jo}(:), :);
                     C(O{jo}(:), :) = Ctemp;
                     S(O{jo}(:), :) = Stemp;
@@ -168,18 +158,6 @@ function [C, f, A, seeds, datasmth, cutoff, pkcutoff, Pnew, S, YrA] = refine_sig
     f = C(K + 1: end, :);
     C = C(1: K, :);
     YrA = YrA(:, 1: K)';
-    
-    %%% delete empty ROIs %%%
-    C= max(C, 0);
-    f = max(0, f);
-    inddel = union(find(sum(A, 1) == 0), find(sum(C, 2) == 0));
-    A = A(:, setdiff(1: K, inddel));
-    C = C(setdiff(1: K, inddel), :);
-    datasmth = datasmth(setdiff(1: K, inddel), :);
-    cutoff = cutoff(setdiff(1: K, inddel));
-    pkcutoff = pkcutoff(setdiff(1: K, inddel));
-    seeds = seeds(setdiff(1: K, inddel));
-    
     time = toc(hsig);
     disp(['Done refine sig, ', num2str(time), ' seconds'])
 end

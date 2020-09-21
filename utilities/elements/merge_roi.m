@@ -1,4 +1,4 @@
-function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(m, roi, sig, seed, datasmthf, cutofff, pkcutofff, ethres)
+function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(m, roi, sig, seed, imax, datasmthf, cutofff, pkcutofff, ethres)
 % [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi new merging criteria for
 %   extracted rois
 %   Jinghao Lu 06/10/2016
@@ -26,7 +26,32 @@ function [roiout, sigout, seedsout, datasmthf, cutofff, pkcutofff] = merge_roi(m
     sigcorfn = sig_sim(datasmthf, cutofff, pkcutofff);
     sigcorfn = sigcorfn > ethres;
     
+%     %%% salient peak keep unmerged %%%
+%     [x, y] = ind2sub([d1, d2], seed);
+%     salient_peak = false(nseed, nseed);
+%     pthres = 0.01;
+%     [X, Y] = meshgrid(1: d2, 1: d1);
+%     for i = 1: nseed
+%         xt = x(i);
+%         yt = y(i);
+%         for j = i + 1: nseed
+%             yp = y(j);
+%             xp = x(j);
+%             d = sqrt((xt - xp) .^ 2 + (yt - yp) .^ 2);
+%             if d < 2 * sz
+%                 ltmp = interp2(X, Y, imax, linspace(yt, yp, 10), linspace(xt, xp, 10), 'linear', 5);
+%                 ltmp = ltmp - linspace(ltmp(1), ltmp(end), 10);
+%                 [mn, idt] = min(ltmp);
+%                 if idt ~= 1 && idt ~= 10 && (ltmp(1) - mn) > pthres
+%                     salient_peak(i, j) = true;
+%                     salient_peak(j, i) = true;
+%                 end
+%             end
+%         end
+%     end
+
     %%% graph matrix finally used %%%
+%     conmtx = roicon & sigcorfn & (~salient_peak);
     conmtx = roicon & sigcorfn;
     
     %% get the graph %%

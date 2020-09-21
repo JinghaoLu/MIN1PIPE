@@ -1,4 +1,4 @@
-function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_x, sigma_f, sigma_d)
+function [m, acorrf, acorr, scl, imax] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_x, sigma_f, sigma_d)
 % register movies with the hierarchical movement correction
 %   Jinghao Lu, 09/01/2017
 
@@ -121,6 +121,7 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
     idbatch = [1: ebatch: nf, nf + 1];
     nbatch = length(idbatch) - 1;
     acorrf = zeros(1, nf - 1);
+    imax = zeros(pixh, pixw);
     mx = 0;
     mn = 0;
     for i = 1: nbatch
@@ -128,7 +129,10 @@ function [m, acorrf, acorr, scl] = frame_reg(m, imaxn, se, Fs, pixs, scl, sigma_
         acorrf(max(1, idbatch(i) - 1): idbatch(i + 1) - 2) = get_trans_score(tmp, [], 1, 1, [], maskc);
         mx = max(mx, max(max(max(tmp, [], 1), [], 2), [], 3));
         mn = min(mx, min(max(min(tmp, [], 1), [], 2), [], 3));
+        imax = max(imax, max(tmp, [], 3));
     end
+    imax = imax - mn;
+    imax = imax / (mx - mn);
     
     %%% normalize %%%
     m = normalize_batch(m.Properties.Source, 'reg', mx, mn, idbatch);

@@ -31,8 +31,33 @@ function [idusef, datasmthf, datusef, cutofff, pkcutofff] = seeds_merge(imax, id
     end
     ovlpdata = triu(ovlpdata < 1.5 * sz) - diag(ones(1, nsd));    
         
+    %%% salient peak keep unmerged %%%
+    salient_peak = false(nsd, nsd);
+    pthres = 0.005;
+    [X, Y] = meshgrid(1: pixw, 1: pixh);
+    for i = 1: nsd
+        xt = x(i);
+        yt = y(i);
+        for j = i + 1: nsd
+            yp = y(j);
+            xp = x(j);
+            d = sqrt((xt - xp) .^ 2 + (yt - yp) .^ 2);
+            if d < 2 * sz
+%                 ltmp = improfile(imax, [yt; yp], [xt; xp]);
+                ltmp = interp2(X, Y, imax, linspace(xt, xp, 10), linspace(yt, yp, 10));
+                ltmp = ltmp - linspace(ltmp(1), ltmp(end), 10);
+                [mn, idt] = min(ltmp);
+                if idt ~= 1 && idt ~= 10 && (ltmp(1) - mn) > pthres
+                    salient_peak(i, j) = true;
+                    salient_peak(j, i) = true;
+                end
+            end
+        end
+    end
+    
     %%% graph matrix finally used %%%
-    corrdatat = corrdatat & ovlpdata;
+    corrdatat = corrdatat & ovlpdata & (~salient_peak);
+%     corrdatat = corrdatat & ovlpdata;
     
     %% get the graph %%
     iduset = seeds_merge_unit(corrdatat, imax, iduse);

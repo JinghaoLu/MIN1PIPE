@@ -1,4 +1,4 @@
-function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file_base, file_fmt, Fsi, Fsi_new, ratio, ttype)
+function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(path_name, file_base, file_fmt, Fsi, Fsi_new, ratio, ttype)
 % Concatinate data pieces from raw 4GB-tif chunks,
 %   new tiff files,
 %   or avi files from UCLA miniscope
@@ -54,9 +54,11 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             for i = 1: length(dirst)
                 dirs{i} = dirst(i).name;
                 if contains(file_fmt, 'avi')
-                    info = matlab.internal.VideoReader([path_name, dirs{i}]);
-                    ts = info.Timestamps;
-                    nft(i) = length(ts);
+%                     info = matlab.internal.VideoReader([path_name, dirs{i}]);
+%                     ts = info.Timestamps;
+%                     nft(i) = length(ts);
+                    info = aviinfo([path_name, dirs{i}]);
+                    nft(i) = info.NumFrames;
                     temp1 = strfind(dirs{i}, file_base);
                     temp2 = strfind(dirs{i}, '.');
                     idx(i) = str2double(dirst(i).name(temp1 + length(file_base): temp2 - 1));
@@ -76,9 +78,16 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             
             %% initialization to get frames %%
             if contains(file_fmt, 'avi')
-                info = VideoReader([path_name, dirs{1}]);
-                dtype = ['uint', num2str(info.BitsPerPixel)];
-                vfmt = info.VideoFormat;
+                try
+                    info = VideoReader([path_name, dirs{1}]);
+                    dtype = ['uint', num2str(info.BitsPerPixel)];
+                    vfmt = info.VideoFormat;
+                catch
+                    info = aviinfo([path_name, dirs{1}]);
+                    dt = info.FileSize / (info.NumFrames * info.Width * info.Height);
+                    dtype = ['uint', num2str(round(dt) * 8)];
+                    vfmt = info.ImageType;
+                end
                 if strcmp(vfmt, 'RGB24')
                     dtype = 'uint8';
                 end
@@ -168,6 +177,11 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                             hstep2 = 10000000;
                             headert = d_raw(1: hstep2)';
                             h1 = strfind(headert, 'movi00db');
+                            targetlist = '00db';
+                            if isempty(h1)
+                                h1 = strfind(headert, 'movi00dc');
+                                targetlist = '00dc';
+                            end
                             dlen = headert(h1 + 8: h1 + 11);
                             ndframe = double(typecast(dlen, 'uint32'));
                             stt1 = h1 + 11;
@@ -175,7 +189,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
                             stt = zeros(nft(idt), 1);
                             stt(1) = stt1;
                             stp = stt1 + ndframe;
-                            target = ['00db', char(dlen)];
+                            target = [targetlist, char(dlen)];
                             for ii = 2: nft(idt)
                                 headert = d_raw(stp + 1: stp + hstep1)';
                                 h1 = strfind(headert, target);
@@ -258,10 +272,12 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             end
             
             %%% normalize batch version %%%
-            imx = max(imaxf(:));
-            imn = min(iminf(:));
-            m = normalize_batch(filename, 'frame_all', imx, imn, idbatch);
+            imx1 = max(imaxf(:));
+            imn1 = min(iminf(:));
+            m = normalize_batch(filename, 'frame_all', imx1, imn1, idbatch);
+            save([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
         else %%% get outputs from the saved data file %%%
+            load([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
             m = matfile(filename);
             [pixh, pixw, nf] = size(m, 'frame_all');
             imaxf = zeros(pixh, pixw);
@@ -323,11 +339,13 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf] = data_cat(path_name, file
             end
             
             %%% normalize %%%
-            imx = max(imaxf(:));
-            imn = min(iminf(:));
+            imx1 = max(imaxf(:));
+            imn1 = min(iminf(:));
             idbatch = idbatchn;
-            m = normalize_batch(filename, 'frame_all', imx, imn, idbatch);
+            m = normalize_batch(filename, 'frame_all', imx1, imn1, idbatch);
+            save([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
         else
+            load([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
             m = matfile(filename);
             imaxf = zeros(pixh, pixw);
             for i = 1: nbatch

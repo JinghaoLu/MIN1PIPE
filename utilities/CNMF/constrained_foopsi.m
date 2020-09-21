@@ -119,11 +119,11 @@ if isempty(g)
     pg = poly(options.fudge_factor*rg);
     g = -pg(2:end);
 end
-if options.bas_nonneg  % lower bound for baseline
-    b_lb = 0;
-else
+% if options.bas_nonneg  % lower bound for baseline
+%     b_lb = 0;
+% else
     b_lb = min(y);
-end
+% end
 
 if strcmpi(method,'dual'); method = 'dual';
 elseif strcmpi(method,'cvx'); method = 'cvx';
