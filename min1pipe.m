@@ -174,8 +174,8 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
 %             dff = compute_dff(sigfn, bgfn, bgffn, seedsfn);
 
             %%% estimate df/f %%%
-            imcur = imaxy1;
-            imref = imaxy;
+            imcur = normalize(imaxy1);
+            imref = normalize(imaxy);
             [img, sx, sy] = logdemons_unit(imref, imcur);
             ibuse = ibmax - ibmin;
             for ii = 1: length(sx)
