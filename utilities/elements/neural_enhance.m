@@ -1,4 +1,4 @@
-function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhance(m_in, filename, Params)
+function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmean] = neural_enhance(m_in, filename, Params)
 % batch version of anisotropic diffusion & background removal
 %   Jinghao Lu, 07/01/2018
 
@@ -38,8 +38,7 @@ function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhan
         %% batch neural enhancing %%
         imaxf = zeros(pixh, pixw);
         iminf = zeros(pixh, pixw);
-        ibmax = zeros(pixh, pixw);
-        ibmin = zeros(pixh, pixw);
+        ibmean = zeros(pixh, pixw);
         for i = 1: nbatch
             %%% get the current batch frames %%%
             tmp = m_in.frame_all(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
@@ -69,8 +68,12 @@ function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhan
             imaxf = max(cat(3, max(reg, [], 3), imaxf), [], 3);
             iminf = min(cat(3, min(reg, [], 3), iminf), [], 3);
             bground = tmp - reg;
-            ibmax = max(max(bground, [], 3), ibmax);
-            ibmin = min(prctile(bground, 1, 3), ibmin);
+            
+            %%% remove large uniform background %%%
+            parfor ii = 1: size(bground, 3)
+                bground(:, :, ii) = imtophat(bground(:, :, ii), strel('disk', round(szad * 6)));
+            end
+            ibmean = ibmean + sum(bground, 3);
             
             %%% save Ydebg %%%
             disp(['Begin saving Ydebg #', num2str(i), '/', num2str(nbatch), ' batch'])
@@ -82,6 +85,7 @@ function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhan
         toc(h)
         
         %% normalize Ydebg %%
+        ibmean = ibmean / nf;
         imx2 = max(imaxf(:));
         imn2 = min(iminf(:));
         imaxf = normalize(imaxf);

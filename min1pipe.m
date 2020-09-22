@@ -86,7 +86,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             %% neural enhancing batch version %%
             %%% --------- 2nd section ---------- %%%
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
-            [m, imaxy1, overwrite_flag, imx2, imn2, ibmax, ibmin] = neural_enhance(m, filename_reg, Params);
+            [m, imaxy1, overwrite_flag, imx2, imn2, ibmean] = neural_enhance(m, filename_reg, Params);
             
             %% neural enhancing postprocess %%
             if overwrite_flag
@@ -177,15 +177,14 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             imcur = normalize(imaxy1);
             imref = normalize(imaxy);
             [img, sx, sy] = logdemons_unit(imref, imcur);
-            ibuse = ibmax - ibmin;
             for ii = 1: length(sx)
-                ibuse = iminterpolate(ibuse, sx{ii}, sy{ii});
+                ibmean = iminterpolate(ibmean, sx{ii}, sy{ii});
             end
             
             x = (imx1 - imn1) * (imx2 - imn2) + imn1;
             roifnt = roifn;
             roifnt = roifnt ./ sum(roifnt, 1);
-            bguse1 = ibuse(:)' * roifnt;
+            bguse1 = ibmean(:)' * roifnt;
             bguse2 = min(sigfn, [], 2) * x;
             bguse = bguse1(:) * (imx1 - imn1) + bguse2(:);
             dff = double(full((sigfn - min(sigfn, [], 2)) * x ./ bguse));
