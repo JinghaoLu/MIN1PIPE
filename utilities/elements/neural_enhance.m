@@ -90,9 +90,9 @@ function [m_out, imaxf, overwrite_flag, imx2, imn2, ibmean] = neural_enhance(m_i
         imn2 = min(iminf(:));
         imaxf = normalize(imaxf);
         m_out = normalize_batch(filename, 'reg', imx2, imn2, idbatch);
-        save([fname, '_supporting.mat'], 'imx2', 'imn2', 'imaxf', 'ibmax', 'ibmin', '-append')
+        save([fname, '_supporting.mat'], 'imx2', 'imn2', 'imaxf', 'ibmean', '-append')
     else
-        load([fname, '_supporting.mat'], 'imx2', 'imn2', 'imaxf', 'ibmax', 'ibmin')
+        load([fname, '_supporting.mat'], 'imx2', 'imn2', 'imaxf', 'ibmean')
         m_out = matfile(filename, 'writable', true);
     end
     timeh = toc(h);
