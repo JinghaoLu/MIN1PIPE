@@ -68,6 +68,7 @@ This Matlab implementation has the following dependencies (included under [`util
 - Signal Processing Toolbox
 - Statistics and Machine Learning Toolbox
 - Symbolic Math Toolbox
+- Wavelet Toolbox
 
 Other modified functions adapted from others are credited the original sources in code documentations.
 
