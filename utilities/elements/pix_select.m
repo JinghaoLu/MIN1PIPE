@@ -232,11 +232,11 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
     ebatch = ceil(d2 / nbatch);
     idbatch = [1: ebatch: d2, d2 + 1];
     nbatch = length(idbatch) - 1;
-    bps = linspace(idusef(1), idusef(end), nbatch + 1);
+    bps = linspace(idusef(1), idusef(end) + 1, nbatch + 1);
     offset = 0;
 
     for ib = 1: nbatch
-        idcurr = idusef(idusef >= bps(ib) & idusef <= bps(ib + 1));
+        idcurr = idusef(idusef >= bps(ib) & idusef < bps(ib + 1));
         [~, wmin] = ind2sub([d1, d2], idcurr(1));
         wmin = max(1, wmin - swin);
         [~, wmax] = ind2sub([d1, d2], idcurr(end));
