@@ -154,7 +154,7 @@ function [m, xfall, sxall, syall] = inter_section(m, sttn, se, pixs, scl, sigma_
 %     nsize = pixh * pixw * nff * stype * 8; %%% heuristic size of algorithm %%%
     nsize = pixh * pixw * count * stype * 16; %%% heuristic size of algorithm %%%
     nbatch = batch_compute(nsize);
-    ebatch = round(nff / nbatch);
+    ebatch = ceil(nff / nbatch);
     
     i = 1;
     idbatch = zeros(1, nbatch);
