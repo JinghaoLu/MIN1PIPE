@@ -12,10 +12,8 @@ function real_neuron_select
     roi = roifn;
     sig = sigfn;
     seeds = seedsfn;
-    bg = bgfn;
-    bgf = bgffn;
-    roir = roifnr;
-    sigr = sigfnr;
+    spk = spkfn;
+    dffs = dff;
     [pixh, pixw] = size(imax);
 
     %%% initialize parameters %%%
@@ -124,11 +122,9 @@ function real_neuron_select
     roifn = roi(:, neuron_use);
     sigfn = sig(neuron_use, :);
     seedsfn = seeds(neuron_use);
-    roifnr = roir(:, neuron_use);
-    sigfnr = sigr(neuron_use, :);
-    bgfn = bg;
-    bgffn = bgf;
-    save([path_name, file_id, '_refined.mat'], 'roifn', 'sigfn', 'seedsfn', 'bgfn', 'bgffn', 'roifnr', 'sigfnr', 'imax', 'pixh', 'pixw', 'raw_score', 'corr_score', 'Params')
+    spkfn = spk(neuron_use, :);
+    dff = dffs(neuron_use, :);
+    save([path_name, file_id, '_refined.mat'], 'roifn', 'sigfn', 'seedsfn', 'dff', 'spkfn', 'bgfn', 'bgffn', 'imax', 'imaxn', 'imaxy', 'imeanf', 'pixh', 'pixw', 'raw_score', 'corr_score', 'Params')
 end
 
 
