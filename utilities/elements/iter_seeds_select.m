@@ -24,7 +24,7 @@ function [siguse, roiuse, seedsuse, buse, bfuse, datasmthuse, cutoffuse, pkcutof
             corrthres = Params.pix_select_corrthres;
             [roi, sig, bg, bgf, seeds, datasmth0, cutoff0, pkcutoff0] = pix_select(m_tmp, mask, sz, Fsi_new, sigthres, corrthres);
         else
-            [roi, sig, seeds, bg, bgf, datasmth0, cutoff0, pkcutoff0] = manual_seeds_select(m, Fsi_new, sz);
+            [roi, sig, seeds, bg, bgf, datasmth0, cutoff0, pkcutoff0] = manual_seeds_select(m_tmp, Fsi_new, sz);
         end
                 
         %%% refine roi %%%
