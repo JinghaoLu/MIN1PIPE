@@ -16,9 +16,9 @@ function [path_name, file_base, file_fmt] = data_info
         %%% first find out whether it is Inscopix or UCLA %%%
         if contains(file_name{i}, '.avi')
             file_fmt{i} = 'avi';
-            ids = regexp(file_name{i}, '\d');
+            ids = regexp(file_name{i}(1: end - 4), '[^\d]');
             ids = ids(end);
-            file_base{i} = file_name{i}(1: ids - 1);
+            file_base{i} = file_name{i}(1: ids);
         elseif contains(file_name{i}, '.tiff')
             file_fmt{i} = 'tiff';
             file_temp1 = find(file_name{i} == '-', 1, 'last');
