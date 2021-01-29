@@ -119,8 +119,8 @@ Other modified functions adapted from others are credited the original sources i
 - **`roifn`**: processed vectorized ROI footprints; contains single cell in each column (vectorized spatial map)
 - **`sigfn`**: processed calcium traces of corresponding ROIs; contains single cell in each row (calcium trace)
 - **`spkfn`**: spike train inferred from [`refine_sig.m`](./utilities/elements/refine_sig.m)
-- **`roifnr`**: processed vectorized ROI footprints without calcium deconvolution
-- **`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"
+- ~~**`roifnr`**: processed vectorized ROI footprints without calcium deconvolution~~
+- ~~**`sigfnr`**: processed calcium traces without calcium deconvolution, meaning "no artificial cleaning"~~
 - **`seedsfn`**: ROI centers in pixel coordinates; indices of all ROIs and be converted to (h, w) position using ```ind2sub```
 - **`Params`**: used parameters
 - **`reg`**: data after neural enhancing (and movement correction), saved for reprocessing
