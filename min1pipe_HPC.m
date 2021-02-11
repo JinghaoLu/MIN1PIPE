@@ -88,12 +88,12 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
             
             %% neural enhancing batch version %%
             filename_reg = [path_name, file_base{i}, '_reg.mat'];
-            [m, imaxy, overwrite_flag] = neural_enhance(m, filename_reg, Params);
+            [m, imaxy1, overwrite_flag, imx2, imn2, ibmean] = neural_enhance(m, filename_reg, Params);
             
             %% neural enhancing postprocess %%
             if overwrite_flag
                 nflag = 1;
-                m = noise_suppress(m, imaxy, Fsi_new, nflag);
+                m = noise_suppress(m, imaxy1, Fsi_new, nflag);
             end
             
             %% movement correction %%
@@ -107,7 +107,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
                     sigma_f = Params.mc_sigma_f;
                     sigma_d = Params.mc_sigma_d;
                     se = Params.neuron_size;
-                    [m, corr_score, raw_score, scl, imaxy] = frame_reg(m, imaxy, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
+                    [m, corr_score, raw_score, scl, imaxy] = frame_reg(m, imaxy1, se, Fsi_new, pixs, scl, sigma_x, sigma_f, sigma_d);
                     Params.mc_scl = scl; %%% update latest scl %%%
                     
 %                     file_name_to_save = [path_name, file_base{i}, '_data_processed.mat'];
@@ -174,8 +174,22 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
             sigfn = max(roifn, [], 1)' .* sigfn;
             roifn = roifn ./ max(roifn, [], 1);
 %             dff = compute_dff(sigfn, bgfn, bgffn, seedsfn);
-            dff = sigfn ./ mean(sigfn, 2);
-%             dff = sigfn ./ (mean(bgffn) * bgfn(seedsfn) + mean(sigfn, 2));
+
+            %%% estimate df/f %%%
+            imcur = normalize(imaxy1);
+            imref = normalize(imaxy);
+            [img, sx, sy] = logdemons_unit(imref, imcur);
+            for ii = 1: length(sx)
+                ibmean = iminterpolate(ibmean, sx{ii}, sy{ii});
+            end
+            
+            x = (imx1 - imn1) * (imx2 - imn2) + imn1;
+            roifnt = roifn;
+            roifnt = roifnt ./ sum(roifnt, 1);
+            bguse1 = ibmean(:)' * roifnt;
+            bguse2 = min(sigfn, [], 2) * x;
+            bguse = bguse1(:) * (imx1 - imn1) + bguse2(:);
+            dff = double(full((sigfn - min(sigfn, [], 2)) * x ./ bguse));
             
             %% save data %%
             stype = parse_type(class(m.reg(1, 1, 1)));
