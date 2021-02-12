@@ -17,11 +17,7 @@ function [path_name, file_base, file_fmt] = data_info
         if contains(file_name{i}, '.avi')
             file_fmt{i} = 'avi';
             ids = regexp(file_name{i}(1: end - 4), '[^\d]');
-            if isempty(ids)
-                ids = length(file_name{i}) - 4;
-            else
-                ids = ids(end);
-            end
+            ids = ids(end);
             file_base{i} = file_name{i}(1: ids);
         elseif contains(file_name{i}, '.tiff')
             file_fmt{i} = 'tiff';
