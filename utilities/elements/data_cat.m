@@ -174,8 +174,9 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
                             stt = stto;
                         else
                             hstep1 = 20;
-                            hstep2 = 10000000;
-                            headert = d_raw(1: hstep2)';
+                            hstep2 = 200000;
+                            hstep2t = 200000;
+                            headert = d_raw(1: hstep2t)';
                             h1 = strfind(headert, 'movi00db');
                             targetlist = '00db';
                             if isempty(h1)

@@ -112,11 +112,13 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
 %                     if exist(file_name_to_save, 'file')
 %                         delete(file_name_to_save)
 %                     end
-                    save(m.Properties.Source, 'corr_score', 'raw_score', '-v7.3', '-append');
+                    save(m.Properties.Source, 'corr_score', 'raw_score', 'imaxy', '-v7.3', '-append');
                 else
                     %%% spatiotemporal stabilization %%%
                     m = frame_stab(m);
                 end
+            else
+                imaxy = m.imaxy;
             end
             
             %% movement correction postprocess %%
