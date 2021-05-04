@@ -148,7 +148,7 @@ If post-process is selected, there will be an additional *".mat"* file created w
     - Data should be arranged in sessions.
     - Each session contains multiple videos automatically divided by the recording softwares.
     - For [Inscopix](https://www.inscopix.com/) data, data are divided and renamed with a pattern of adding "-" + *"indices"*. We suggest sticking to this format for *.tif* and *.tiff* data.
-    - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"* + *"indices"*, and we suggest sticking to this format for *.avi* data.
+    - For [UCLA miniscope](http://miniscope.org/index.php/Main_Page), data are named with *"msCam"/letter(s)* + *"indices"*, and we suggest sticking to this format for *.avi* data.
     - For best practice, remove apparent artifects such as bright edges of the grin lenses, even though the algorithm can handle these conditions.
     - For sessions with only a few neurons and possibly huge artifects/contaminations, semi-auto seeds selection can be considered at first hand;
     - Usually it poses more difficulties (more time spent/less accuracy) on the movement correction module under such (few neurons/key information) circumstances.
