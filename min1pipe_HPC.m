@@ -97,8 +97,8 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
             end
             
             %% movement correction %%
-            if overwrite_flag
-                if ismc
+            if ismc
+                if overwrite_flag
                     pixs = min(pixh, pixw);
                     Params.mc_pixs = pixs;
                     Fsi_new = Params.Fsi_new;
@@ -114,11 +114,15 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
 %                     if exist(file_name_to_save, 'file')
 %                         delete(file_name_to_save)
 %                     end
-                    save(m.Properties.Source, 'corr_score', 'raw_score', '-v7.3', '-append');
+                    save(m.Properties.Source, 'corr_score', 'raw_score', 'imaxy',  '-v7.3', '-append');
                 else
-                    %%% spatiotemporal stabilization %%%
-                    m = frame_stab(m);
+                    imaxy = m.imaxy;
                 end
+            else
+                if overwrite_flag
+                    m = frame_stab(m); %%% spatiotemporal stabilization %%%
+                end
+                imaxy = imaxy1;
             end
             
             %% movement correction postprocess %%

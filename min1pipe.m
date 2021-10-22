@@ -95,8 +95,8 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             end
             
             %% movement correction %%
-            if overwrite_flag
-                if ismc
+            if ismc
+                if overwrite_flag
                     pixs = min(pixh, pixw);
                     Params.mc_pixs = pixs;
                     Fsi_new = Params.Fsi_new;
@@ -112,13 +112,15 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
 %                     if exist(file_name_to_save, 'file')
 %                         delete(file_name_to_save)
 %                     end
-                    save(m.Properties.Source, 'corr_score', 'raw_score', 'imaxy', '-v7.3', '-append');
+                    save(m.Properties.Source, 'corr_score', 'raw_score', 'imaxy',  '-v7.3', '-append');
                 else
-                    %%% spatiotemporal stabilization %%%
-                    m = frame_stab(m);
+                    imaxy = m.imaxy;
                 end
             else
-                imaxy = m.imaxy;
+                if overwrite_flag
+                    m = frame_stab(m); %%% spatiotemporal stabilization %%%
+                end
+                imaxy = imaxy1;
             end
             
             %% movement correction postprocess %%

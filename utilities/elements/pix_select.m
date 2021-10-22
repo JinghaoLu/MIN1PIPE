@@ -248,7 +248,7 @@ function [roi, sig, bg, bgf, idusef, datasmthf, cutofff, pkcutofff] = pix_select
             [x, y] = ind2sub([pixh, pixw], idcurr(i));
             y = y - wmin + 1;
             
-            rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw, y + swin)];
+            rg = [max(1, x - swin), min(pixh, x + swin); max(1, y - swin), min(pixw - wmin + 1, y + swin)];
             lsml = prod(diff(rg, 1, 2) + 1);
             ctr = [x - rg(1, 1) + 1, y - rg(2, 1) + 1];
             sa = rtmp(rg(1, 1): rg(1, 2), rg(2, 1): rg(2, 2), 1: nf);
