@@ -23,10 +23,6 @@ function [m_out] = noise_suppress(m_in, maxall, Fs, nflag, filename)
     end
 
     if overwrite_flag || nflag == 1
-        if exist(filename, 'file')
-            delete(filename);
-        end
-
         %% first intensity filter %%
         [pixh, pixw, nf] = size(m_in, 'reg');
         ithres = intensity_filter(maxall);
