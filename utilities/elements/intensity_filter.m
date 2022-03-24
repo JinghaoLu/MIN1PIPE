@@ -19,17 +19,26 @@ function ithres = intensity_filter(maxall)
         %             %         ithres = (y1 + y2) / 2;
         %             ithres = y1;
         %         catch
+        
+%         tmp1 = sort(tmp1);
+%         tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
+%         tmp = tmp1(:) - 0.2 * tmp2(:);
+%         x = 1: length(tmp);
+%         sker = 2 * round(length(tmp) / 100) + 1;
+%         xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
+%         tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
+%         tmpg = smooth(diff(smooth(tmpt, sker)), sker);
+%         tmpg = tmpg(x + sker);
+%         idthres = find(tmpg >= 0, 1);
+%         ithres = min(prctile(tmp1, 90), tmp1(idthres));
+        
         tmp1 = sort(tmp1);
         tmp2 = linspace(tmp1(1), 1 * tmp1(end), length(tmp1));
         tmp = tmp1(:) - 0.2 * tmp2(:);
-        x = 1: length(tmp);
-        sker = 2 * round(length(tmp) / 100) + 1;
-        xq = [1 - sker: 0, x, length(tmp) + 1: length(tmp) + sker];
-        tmpt = interp1(x, tmp, xq, 'linear', 'extrap');
-        tmpg = smooth(diff(smooth(tmpt, sker)), sker);
-        tmpg = tmpg(x);
-        idthres = find(tmpg >= 0, 1);
-        ithres = min(prctile(tmp1, 90), tmp1(idthres));
+        tmpg = smoothdata(tmp, 'gaussian', round(length(tmp) / 10));
+        [~, idthres] = min(tmpg);
+        ithres = min(prctile(tmp1, 50), tmp1(idthres));
+        
         %
         %         imgmax = feature2_comp(maxall, 0, 40, 1 / ithres);
         %         imgmaxt = imgmax(imgmax > 0);
