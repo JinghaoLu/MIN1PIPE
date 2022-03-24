@@ -44,6 +44,12 @@ function [roi, sig, seeds, datasmth, cutoff, pkcutoff] = final_seeds_select(m, r
     [~, id6, ~] = intersect(seeds, find(maxcorr(:) > 0));
 
     %% get refined variables %%
+    id1 = id1(:);
+    id2 = id2(:);
+    id3 = id3(:);
+    id4 = id4(:);
+    id5 = id5(:);
+    id6 = id6(:);
     id = intersect(find(id1 & id2 & id3 & id4 & id5), id6);
     roi = roi(:, id);
     sig = sig(id, :);
