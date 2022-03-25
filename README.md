@@ -20,8 +20,8 @@ MIN1PIPE is a fully automatic, Matlab-based toolbox, solving the full range prob
 
 
 ## Updates
-***3/25/2022*** **New version released (v3.1 & v4.0.1 (beta)): 
-v4.0.1: MIN1PIPE now automatically detects **`se`** and *`spatialr`**. Please refer to the release notes for syntax.
+***3/25/2022*** **New version released (v3.1 & v4.0.1 (beta)): **
+v4.0.1: MIN1PIPE now automatically detects **`se`** and *`spatialr`**. Please refer to the release notes for syntax.**
 v3.1: latest stable version, with relatively liberal standards of selecting ROIs. Feedbacks regarding the bugs and/or suggestions are welcome.**
 
 ***11/19/2019*** **New version released (v2-alpha): new neural enhancing module with noise suppression: reduce the effect of sharp background structures. Add new output variable **`dff`** for dF/F. Feedbacks regarding the bugs and/or suggestions are welcome.**
