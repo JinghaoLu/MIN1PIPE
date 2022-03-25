@@ -10,23 +10,20 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
     min1pipe_init;
     
     %% initialize parameters %%
+    defpar = default_parameters;
     if nargin < 1 || isempty(Fsi)
-        defpar = default_parameters;
         Fsi = defpar.Fsi;
     end
     
     if nargin < 2 || isempty(Fsi_new)
-        defpar = default_parameters;
         Fsi_new = defpar.Fsi_new;
     end
     
     if nargin < 3 || isempty(spatialr)
-        defpar = default_parameters;
         spatialr = defpar.spatialr;
     end
     
     if nargin < 4 || isempty(se)
-        defpar = default_parameters;
         se = defpar.neuron_size;
     end
     
@@ -69,7 +66,12 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
     
     hpipe = tic;
     for i = 1: length(file_base)
-        
+        %%% auto-detect/adjust parameters %%%
+        fname = [path_name, file_base{i}, '.', file_fmt{i}];
+        [se, spatialr] = frame_sample(fname);
+        Params.neuron_size = se;
+        Params.spatialr = spatialr;
+    
         %%% judge whether do the processing %%%
         filecur = [path_name, file_base{i}, '_data_processed.mat'];
         msg = 'Redo the analysis? (y/n)';
