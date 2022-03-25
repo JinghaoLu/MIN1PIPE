@@ -68,6 +68,12 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
     for i = 1: length(file_base)
         %%% auto-detect/adjust parameters %%%
         fname = [path_name, file_base{i}, '.', file_fmt{i}];
+        try
+            [se, spatialr] = frame_sample(fname);
+        catch
+            fname = [path_name, file_base{i}, '-1.', file_fmt{i}];
+            [se, spatialr] = frame_sample(fname);
+        end
         [se, spatialr] = frame_sample(fname);
         Params.neuron_size = se;
         Params.spatialr = spatialr;
