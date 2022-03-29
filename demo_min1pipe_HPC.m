@@ -5,8 +5,8 @@ addpath(genpath('YOURPATH/MIN1PIPE')) % add MIN1PIPE repo to matlab path, this w
 %% session-specific parameter initialization %% 
 Fsi = 20;
 Fsi_new = 20; %%% no temporal downsampling %%%
-spatialr = 1; %%% no spatial downsampling %%%
-se = 5; %%% structure element for background removal %%%
+% spatialr = 1; %%% no spatial downsampling %%%
+% se = 5; %%% structure element for background removal %%%
 ismc = true; %%% run movement correction %%%
 flag = 1; %%% use auto seeds selection; 2 if manual %%%
 % isvis = true; %%% do visualize %%%
@@ -16,7 +16,8 @@ file_name = 'demo_data.tif';
 
 
 %% main program %%
-[fname, frawname, fregname] = min1pipe_HPC(Fsi, Fsi_new, spatialr, se, ismc, flag, path_name, file_name);
+% [fname, frawname, fregname] = min1pipe_HPC(Fsi, Fsi_new, spatialr, se, ismc, flag, path_name, file_name); % old if you want to manually select parameters %  
+[fname, frawname, fregname] = min1pipe_HPC(Fsi, Fsi_new, [], [], ismc, flag, path_name, file_name);
 
 %% plot some images %%
 load(fname)

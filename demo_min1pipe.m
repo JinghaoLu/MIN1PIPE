@@ -3,15 +3,16 @@
 %% session-specific parameter initialization %% 
 Fsi = 20;
 Fsi_new = 20; %%% no temporal downsampling %%%
-spatialr = 1; %%% no spatial downsampling %%%
-se = 5; %%% structure element for background removal %%%
+% spatialr = 1; %%% no spatial downsampling %%%
+% se = 5; %%% structure element for background removal %%%
 ismc = true; %%% run movement correction %%%
 flag = 1; %%% use auto seeds selection; 2 if manual %%%
 % isvis = true; %%% do visualize %%%
 ifpost = false; %%% set true if want to see post-process %%%
 
 %% main program %%
-[fname, frawname, fregname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag);
+% [fname, frawname, fregname] = min1pipe(Fsi, Fsi_new, spatialr, se, ismc, flag); % old if you want to manually select parameters %  
+[fname, frawname, fregname] = min1pipe(Fsi, Fsi_new, [], [], ismc, flag);
 
 %% plot some images %%
 load(fname)

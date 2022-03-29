@@ -29,9 +29,13 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
     end
         
     if ~contains(file_fmt, 'mat')
-        filename = [path_name, file_base, '_frame_all.mat'];
-        msg = 'Overwrite raw .mat file (data)? (y/n)';
-        overwrite_flag = judge_file(filename, msg);
+        filename = [path_name, file_base, '_frame_allt.mat'];
+        if exist(filename, 'file')
+            overwrite_flag = false;
+        else
+            overwrite_flag = true;
+        end
+        
         if overwrite_flag
             if exist(filename, 'file')
                 delete(filename);
@@ -162,7 +166,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
             stto = [];
             fname_useo = [];
             for ib = 1: nbatch
-                frame_all = zeros(pixh, pixw, idbatch(ib + 1) - idbatch(ib), dtype);
+                frame_allt = zeros(pixh, pixw, idbatch(ib + 1) - idbatch(ib), dtype);
                 if contains(file_fmt, 'avi')
                     for i = 1: length(dir_use{ib})
                         %%% prepare file %%%
@@ -213,7 +217,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
                         %%% create frames %%%
                         for ii = rg(rgcount): rg(rgcount + 1) - 1
                             frame = flipud(reshape(d_raw(stt(f_idx(ii)) + 1: stt(f_idx(ii)) + ndframe), pixwo, pixho)');
-                            frame_all(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
+                            frame_allt(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
                             if mod(ii, 100) == 0
                                 disp(num2str(ii))
                             end
@@ -253,7 +257,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
                                 ftmp = swapbytes(ftmp);
                             end
                             frame = reshape(ftmp, pixwo, pixho)';
-                            frame_all(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
+                            frame_allt(:, :, ii - idbatch(ib) + 1) = imresize(frame, [pixh, pixw]);
                             if mod(ii, 100) == 0
                                 disp(num2str(ii))
                             end
@@ -265,22 +269,22 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
                 end
                 
                 %%% save to .mat file of the current batch %%%
-                eval(['frame_all = ', ttype, '(frame_all);'])
-                imaxf = max(cat(3, max(frame_all, [], 3), imaxf), [], 3);
-                iminf = min(cat(3, min(frame_all, [], 3), iminf), [], 3);
-                imeanf = (imeanf * (idbatch(ib) - idbatch(1)) + sum(frame_all, 3)) / (idbatch(ib + 1) - idbatch(1));
-                savef(filename, 2, 'frame_all')
+                eval(['frame_allt = ', ttype, '(frame_allt);'])
+                imaxf = max(cat(3, max(frame_allt, [], 3), imaxf), [], 3);
+                iminf = min(cat(3, min(frame_allt, [], 3), iminf), [], 3);
+                imeanf = (imeanf * (idbatch(ib) - idbatch(1)) + sum(frame_allt, 3)) / (idbatch(ib + 1) - idbatch(1));
+                savef(filename, 2, 'frame_allt')
             end
             
             %%% normalize batch version %%%
             imx1 = max(imaxf(:));
             imn1 = min(iminf(:));
-            m = normalize_batch(filename, 'frame_all', imx1, imn1, idbatch);
+            m = normalize_batch(filename, 'frame_allt', imx1, imn1, idbatch);
             save([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
         else %%% get outputs from the saved data file %%%
             load([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
             m = matfile(filename);
-            [pixh, pixw, nf] = size(m, 'frame_all');
+            [pixh, pixw, nf] = size(m, 'frame_allt');
             imaxf = zeros(pixh, pixw);
             imeanf = zeros(pixh, pixw);
             stype = parse_type(ttype);
@@ -290,7 +294,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
             idbatch = [1: ebatch: nf, nf + 1];
             nbatch = length(idbatch) - 1;
             for i = 1: nbatch
-                tmp = m.frame_all(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
+                tmp = m.frame_allt(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
                 imaxf = max(cat(3, max(tmp, [], 3), imaxf), [], 3);
                 imeanf = (imeanf * (idbatch(i) - idbatch(1)) + sum(tmp, 3)) / (idbatch(i + 1) - idbatch(1));
             end
@@ -314,7 +318,7 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
         %%% collect batch-wise frames %%%
         idbatch = [1: ebatch: nff, nff + 1];
         disp('Begin data cat')
-        filename = [path_name, file_base, '_frame_all.mat'];
+        filename = [path_name, file_base, '_frame_allt.mat'];
         msg = 'Overwrite raw .mat file (data)? (y/n)';
         overwrite_flag = judge_file(filename, msg);
         
@@ -330,12 +334,12 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
             for ib = 1: nbatch
                 iddt = idd(idbatch(ib): idbatch(ib + 1) - 1);
                 eval(['tmp = mm.', vnames{1}, '(1: pixh, 1: pixw, idbatch(ib): idbatch(ib + 1) - 1);'])
-                frame_all = tmp(:, :, iddt);
-                eval(['frame_all = ', ttype, '(frame_all);'])
-                imaxf = max(cat(3, max(frame_all, [], 3), imaxf), [], 3);
-                iminf = min(cat(3, min(frame_all, [], 3), iminf), [], 3);
-                imeanf = (imeanf * (idbatch(ib) - idbatch(1)) + sum(frame_all, 3)) / (idbatch(ib + 1) - idbatch(1));
-                savef(filename, 2, 'frame_all')
+                frame_allt = tmp(:, :, iddt);
+                eval(['frame_allt = ', ttype, '(frame_allt);'])
+                imaxf = max(cat(3, max(frame_allt, [], 3), imaxf), [], 3);
+                iminf = min(cat(3, min(frame_allt, [], 3), iminf), [], 3);
+                imeanf = (imeanf * (idbatch(ib) - idbatch(1)) + sum(frame_allt, 3)) / (idbatch(ib + 1) - idbatch(1));
+                savef(filename, 2, 'frame_allt')
                 idbatchn(ib + 1) = idbatchn(ib) + sum(iddt);
             end
             
@@ -343,14 +347,14 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
             imx1 = max(imaxf(:));
             imn1 = min(iminf(:));
             idbatch = idbatchn;
-            m = normalize_batch(filename, 'frame_all', imx1, imn1, idbatch);
+            m = normalize_batch(filename, 'frame_allt', imx1, imn1, idbatch);
             save([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
         else
             load([path_name, file_base, '_supporting.mat'], 'imx1', 'imn1')
             m = matfile(filename);
             imaxf = zeros(pixh, pixw);
             for i = 1: nbatch
-                tmp = m.frame_all(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
+                tmp = m.frame_allt(1: pixh, 1: pixw, idbatch(i): idbatch(i + 1) - 1);
                 imaxf = max(cat(3, max(tmp, [], 3), imaxf), [], 3);
                 imeanf = (imeanf * (idbatch(i) - idbatch(1)) + sum(tmp, 3)) / (idbatch(i + 1) - idbatch(1));
             end
