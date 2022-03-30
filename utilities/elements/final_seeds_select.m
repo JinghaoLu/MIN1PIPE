@@ -16,18 +16,23 @@ function [roi, sig, seeds, datasmth, cutoff, pkcutoff] = final_seeds_select(m, r
     id4 = false(1, length(seeds));
     cthres = 60;
     ithres = 60;
-    kss = zeros(length(seeds), 100);
+%     kss = zeros(length(seeds), 100);
     parfor i = 1: length(seeds)
-        rg = linspace(min(sig(i, :)), max(sig(i, :)), 100);
-        tsig = sig(i, :);
-        tsig = tsig(tsig > prctile(tsig, 1) & tsig < prctile(tsig, 99));
-        tmp = ksdensity(tsig, rg);
-        [~, idmax] = max(tmp);
-        id3(i) = idmax < ithres;
-        tmp = cumsum(tmp) / sum(tmp);
-        kss(i, :) = tmp;
-        tmp = find(tmp > 0.5, 1);
-        id4(i) = tmp < cthres;
+        try
+            rg = linspace(min(sig(i, :)), max(sig(i, :)), 100);
+            tsig = sig(i, :);
+            tsig = tsig(tsig > prctile(tsig, 1) & tsig < prctile(tsig, 99));
+            tmp = ksdensity(tsig, rg);
+            [~, idmax] = max(tmp);
+            id3(i) = idmax < ithres;
+            tmp = cumsum(tmp) / sum(tmp);
+%             kss(i, :) = tmp;
+            tmp = find(tmp > 0.5, 1);
+            id4(i) = tmp < cthres;
+        catch
+            id3(i) = false;
+            id4(i) = false;
+        end
     end
     
     %% intensity filter %%
