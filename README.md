@@ -110,8 +110,8 @@ Other modified functions adapted from others are credited the original sources i
 **Key Parameters**:
 - **`Fsi`**: frame rate of original video
 - **`Fsi_new`**: frame rate of temporally downsampled video
-- **`spatialr`**: spatial downsampling scalar, **e.g. 0.5 for a spatial downsampling rate of 2**
-- **`se`**: structure element size, estimated from typical half-neuron size after spatial downsampling
+- **`spatialr`**: spatial downsampling scalar, **e.g. 0.5 for a spatial downsampling rate of 2** (now optional)
+- **`se`**: structure element size, estimated from typical half-neuron size after spatial downsampling (now optional)
 
 **Procedure Parameters**:
 - **`ismc`**: whether use movement correction module
