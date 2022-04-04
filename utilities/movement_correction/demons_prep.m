@@ -9,7 +9,8 @@ function imout = demons_prep(img, mag, denom)
         denom = 3;
     end
     ithres = (max(img(:)) + min(img(:))) / denom;
-    tmp = sigmf(img, [mag, ithres]);
+    tmp = 1./(1 + exp(-mag * (img - ithres)));
+%     tmp = sigmf(img, [mag, ithres]);
 %     tmp = sigmf(img, [mag, prctile(img(:), 98)]);
     tmp = tmp .* (tmp >= median(tmp(:)));
     tmp(tmp == 0) = min(tmp(tmp > 0));
