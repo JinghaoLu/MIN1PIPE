@@ -16,5 +16,6 @@ function [m_out, Params, pixh, pixw] = downsamp(path_name, file_base, m_in, Para
         end
     else
         m_out = matfile(filename, 'Writable', true);
+        [pixh, pixw, ~] = size(m_out, 'frame_all');
     end
 end
