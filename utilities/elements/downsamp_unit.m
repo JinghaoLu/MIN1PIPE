@@ -22,7 +22,9 @@ function [m_out, pixh, pixw] = downsamp_unit(m_in, spatialr, ttype)
     for ib = 1: nbatch
         frame_all = m_in.frame_allt(1: pixh, 1: pixw, idbatch(ib): idbatch(ib + 1) - 1);
         frame_all = frame_all(1: round(1 / spatialr): pixh, 1: round(1 / spatialr): pixw, :);
-        [pixh, pixw, ~] = size(frame_all);
+        [pixht, pixwt, ~] = size(frame_all);
         savef(filename, 2, 'frame_all')
     end
+    pixh = pixht;
+    pixw = pixwt;
 end
