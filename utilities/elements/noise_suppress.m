@@ -20,6 +20,7 @@ function [m_out] = noise_suppress(m_in, maxall, Fs, nflag, filename)
         m_in = matfile(filename, 'writable', true);
     else
         overwrite_flag = false;
+        filename = [];
     end
 
     if overwrite_flag || nflag == 1
