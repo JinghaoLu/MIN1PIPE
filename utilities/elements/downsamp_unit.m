@@ -19,10 +19,19 @@ function [m_out, pixh, pixw] = downsamp_unit(m_in, spatialr, ttype)
     idbatch = [1: ebatch: nf, nf + 1];
 
     %% downsampling %%
+    if isempty(gcp('nocreate'))
+        parpool(feature('numCores'));
+    end
+    
+    pixht = round(pixh * spatialr);
+    pixwt = round(pixw * spatialr);
     for ib = 1: nbatch
         frame_all = m_in.frame_allt(1: pixh, 1: pixw, idbatch(ib): idbatch(ib + 1) - 1);
-        frame_all = frame_all(1: round(1 / spatialr): pixh, 1: round(1 / spatialr): pixw, :);
-        [pixht, pixwt, ~] = size(frame_all);
+        frame_allt = zeros(pixht, pixwt, size(frame_all, 3), class(frame_all));
+        parfor j = 1: size(frame_all, 3)
+            frame_allt(:, :, j) = imresize(frame_all(:, :, j), [pixht, pixwt]);
+        end
+        frame_all = frame_allt;
         savef(filename, 2, 'frame_all')
     end
     pixh = pixht;

@@ -81,6 +81,9 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe(Fsi, Fsi_new
             spatialr = 1;
             [m, filename_raw, imaxn, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(path_name, file_base{i}, file_fmt{i}, Fsi, Fsi_new, spatialr);
             
+            %%% remove dead pixels %%%
+            [m, imaxn] = remove_dp(m, 'frame_allt');
+            
             %%% spatial downsampling after auto-detection %%%
             [m, Params, pixh, pixw] = downsamp(path_name, file_base{i}, m, Params, aflag, imaxn);
 

@@ -19,21 +19,24 @@ function [se, spatialr] = auto_detect_params(a)
     [l, n] = bwlabeln(bbb);
     
     mx = imregionalmax(aaa);
-    idm = find(mx);
-    tm = aaa(idm);
+    tm = zeros(n, 1);
+    for i = 1: n
+        tmp1 = mx & (l == i);
+        tmt = aaa(tmp1);
+        tm(i) = max(tmt);
+    end
     [~, id] = sort(tm, 'descend');
-    stp = 5;
-    iduse = idm(id(1: stp));
     
-    s = zeros(1, stp);
-    for i = 1: stp
-        ii = l(iduse(i));
+    s = zeros(1, n);
+    for i = 1: n
+        ii = id(i);
         tmp = l == ii;
         st = sum(tmp(:));
         s(i) = sqrt(st / pi);
     end
     
-    sf = ceil(mean(s));
+    ss = polyfit(1: n, s, 1);
+    sf = ceil(mean(ss * [1: n; ones(1, n)]));
     if sf > 6
         se = 5;
         spatialr = 5 / sf;
