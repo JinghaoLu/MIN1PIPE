@@ -39,7 +39,7 @@ function [se, spatialr] = auto_detect_params(a)
     sf = ceil(mean(ss * [1: n; ones(1, n)]));
     if sf > 6
         se = 5;
-        spatialr = 5 / sf;
+        spatialr = min(0.1, 5 / sf);
     else
         spatialr = 1;
         se = sf;

@@ -18,13 +18,17 @@ function [PN, imgo, scr] = lk_ref_track(Y, imref, maskc)
         [p0, winsize] = cen_gen(cat(3, imref, imcur));
         [temp, isf(i), ~] = lk2_track(imref, imcur, p0, winsize);
         PN(:, i) = temp - p0;
-        if ~isf(i)
+        imcurt = lk2_warp(imcur, PN(:, i), p0);
+        scr1 = get_trans_score_ref(imcurt, imref);
+        if ~isf(i) || scr1 > scr(i)
             imreft = feature2_comp(imref);
             imcurt = feature2_comp(imcur);
             [p0, winsize] = cen_gen(cat(3, imreft, imcurt));
             [temp, isf(i), ~] = lk2_track(imreft, imcurt, p0, winsize);
             PN(:, i) = temp - p0;
-            if ~isf(i)
+            imcurt = lk2_warp(imcur, PN(:, i), p0);
+            scr2 = get_trans_score_ref(imcurt, imref);
+            if ~isf(i) || scr2 > min(scr(i) / 4, 1.5)
                 [temp, ~] = imregdft(imref, imcur);
                 PN(:, i) = temp;
             end

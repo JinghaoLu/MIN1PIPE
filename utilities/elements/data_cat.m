@@ -69,11 +69,12 @@ function [m, filename, imaxf, imeanf, pixh, pixw, nf, imx1, imn1] = data_cat(pat
                 else
                     info = imfinfo([path_name, dirs{i}]);
                     nft(i) = numel(info);
-                    temp = strfind(dirst(i).name, '-');
-                    if isempty(temp)
+                    temp1 = strfind(dirst(i).name, '-');
+                    temp2 = strfind(dirs{i}, '.');
+                    if isempty(temp1)
                         idx(i) = 0;
                     else
-                        idx(i) = str2double(dirst(i).name(temp + 1: temp + 3));
+                        idx(i) = str2double(dirst(i).name(temp1 + 1: temp2 - 1));
                     end
                 end
             end
