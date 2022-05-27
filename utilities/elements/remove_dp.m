@@ -1,5 +1,6 @@
 function [m_out, imaxn] = remove_dp(m_in, vname)
     [pixh, pixw, nf] = size(m_in, vname);
+    m_in.Properties.Writable = true;
 %     [X, Y] = meshgrid(1: pixw, 1: pixh);
 %     X = X(:);
 %     Y = Y(:);
