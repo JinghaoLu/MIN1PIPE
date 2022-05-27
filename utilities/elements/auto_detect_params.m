@@ -37,9 +37,14 @@ function [se, spatialr] = auto_detect_params(a)
     
     ss = polyfit(1: n, s, 1);
     sf = ceil(mean(ss * [1: n; ones(1, n)]));
+    sizet = min(size(a));
     if sf > 6
         se = 5;
-        spatialr = min(0.1, 5 / sf);
+        if sizet > 200
+            spatialr = max(0.1, 5 / sf);
+        else
+            spatialr = 1;
+        end
     else
         spatialr = 1;
         se = sf;
