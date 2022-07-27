@@ -11,6 +11,7 @@ function [file_name_to_save, filename_raw, filename_reg] = min1pipe_HPC(Fsi, Fsi
     
     %% initialize parameters %%
     defpar = default_parameters;
+    aflag = false;
     if nargin < 1 || isempty(Fsi)
         Fsi = defpar.Fsi;
     end
